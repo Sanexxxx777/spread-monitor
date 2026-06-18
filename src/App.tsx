@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { engine, useEngineVersion } from "@/lib/engine";
 import { loadConfig, saveConfig, type Config } from "@/lib/store";
+import { applyPalette, PALETTE_ORDER, PALETTES } from "@/lib/themes";
 import type { Coin } from "@/lib/types";
 import { Sidebar } from "@/components/Sidebar";
 import { CoinDetail } from "@/components/CoinDetail";
@@ -51,6 +52,16 @@ export default function App() {
   }, [config]);
 
   useEffect(() => {
+    applyPalette(config.settings.palette);
+  }, [config.settings.palette]);
+
+  function cyclePalette() {
+    const i = PALETTE_ORDER.indexOf(config.settings.palette as (typeof PALETTE_ORDER)[number]);
+    const next = PALETTE_ORDER[(i + 1) % PALETTE_ORDER.length];
+    setConfig((c) => ({ ...c, settings: { ...c.settings, palette: next } }));
+  }
+
+  useEffect(() => {
     engine.onAlert = (_coin, msg) => {
       beep();
       setToast(msg);
@@ -85,10 +96,17 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col text-ink">
-      <div data-tauri-drag-region className="h-9 shrink-0 drag flex items-center justify-center">
+      <div data-tauri-drag-region className="h-9 shrink-0 drag flex items-center justify-center relative">
         <span className="text-[11px] font-semibold tracking-[0.22em] text-muted uppercase pointer-events-none">
           Spread Monitor
         </span>
+        <button
+          onClick={cyclePalette}
+          className="no-drag absolute right-4 rounded-lg glass px-3 py-1 text-[11px] font-semibold text-ink hover:border-gold/50 transition-colors"
+          title="Сменить палитру"
+        >
+          {PALETTES[config.settings.palette]?.label ?? "Тема"}
+        </button>
       </div>
 
       <div className="flex-1 min-h-0 flex gap-5 px-6 pb-3">
@@ -101,6 +119,7 @@ export default function App() {
         {selected ? (
           <CoinDetail
             coin={selected}
+            paletteKey={config.settings.palette}
             onChange={(patch) => patchCoin(selected.id, patch)}
             onEdit={() => setDialog({ open: true, edit: selected })}
             onRemove={() => removeCoin(selected.id)}

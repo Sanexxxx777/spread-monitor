@@ -37,4 +37,5 @@ export interface Point {
 export interface Settings {
   maxHistory: number;
   autoStart: boolean;
+  palette: string;
 }

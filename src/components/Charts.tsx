@@ -5,8 +5,10 @@ import {
 } from "lightweight-charts";
 import type { Point } from "@/lib/types";
 
-const TEXT = "#BDA189";
-const LINE = "rgba(255,255,255,0.06)";
+function cssVar(name: string, fallback: string): string {
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return v || fallback;
+}
 
 function smallFmt(v: number): string {
   const a = Math.abs(v);
@@ -20,19 +22,21 @@ function smallFmt(v: number): string {
 const PRICE_FORMAT = { type: "custom" as const, minMove: 1e-8, formatter: smallFmt };
 
 function baseOptions() {
+  const text = cssVar("--chart-text", "#8893A8");
+  const grid = cssVar("--chart-grid", "rgba(255,255,255,0.06)");
   return {
     autoSize: true,
     layout: {
       background: { type: ColorType.Solid, color: "rgba(0,0,0,0)" },
-      textColor: TEXT,
+      textColor: text,
       fontFamily: "SF Mono, JetBrains Mono, ui-monospace, monospace",
       fontSize: 11,
       attributionLogo: false,
     },
-    grid: { vertLines: { color: LINE }, horzLines: { color: LINE } },
-    rightPriceScale: { borderColor: LINE },
-    timeScale: { borderColor: LINE, timeVisible: true, secondsVisible: true },
-    crosshair: { vertLine: { color: TEXT, width: 1 as const }, horzLine: { color: TEXT } },
+    grid: { vertLines: { color: grid }, horzLines: { color: grid } },
+    rightPriceScale: { borderColor: grid },
+    timeScale: { borderColor: grid, timeVisible: true, secondsVisible: true },
+    crosshair: { vertLine: { color: text, width: 1 as const }, horzLine: { color: text } },
   };
 }
 
@@ -45,17 +49,15 @@ export function PriceChart({
   colorB: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const chart = useRef<IChartApi | null>(null);
   const sa = useRef<ISeriesApi<"Line"> | null>(null);
   const sb = useRef<ISeriesApi<"Line"> | null>(null);
 
   useEffect(() => {
     if (!ref.current) return;
-    const c = createChart(ref.current, baseOptions());
-    chart.current = c;
+    const c: IChartApi = createChart(ref.current, baseOptions());
     sa.current = c.addSeries(LineSeries, { color: colorA, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, priceFormat: PRICE_FORMAT });
     sb.current = c.addSeries(LineSeries, { color: colorB, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, priceFormat: PRICE_FORMAT });
-    return () => { c.remove(); chart.current = null; };
+    return () => c.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -73,37 +75,34 @@ export function PriceChart({
 }
 
 export function SpreadChart({
-  history, version, threshold, color,
+  history, version, threshold,
 }: {
   history: Point[];
   version: number;
   threshold: number;
-  color: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const chart = useRef<IChartApi | null>(null);
   const s = useRef<ISeriesApi<"Line"> | null>(null);
-  const zero = useRef<IPriceLine | null>(null);
   const thr = useRef<IPriceLine | null>(null);
 
   useEffect(() => {
     if (!ref.current) return;
-    const c = createChart(ref.current, baseOptions());
-    chart.current = c;
-    const line = c.addSeries(LineSeries, { color, lineWidth: 2, priceLineVisible: false, lastValueVisible: true });
+    const c: IChartApi = createChart(ref.current, baseOptions());
+    const line = c.addSeries(LineSeries, {
+      color: cssVar("--color-gold", "#5B8CFF"), lineWidth: 2,
+      priceLineVisible: false, lastValueVisible: true,
+    });
     s.current = line;
-    zero.current = line.createPriceLine({ price: 0, color: "rgba(189,161,137,0.5)", lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: "" });
-    return () => { c.remove(); chart.current = null; };
+    line.createPriceLine({ price: 0, color: cssVar("--chart-text", "#8893A8"), lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: "" });
+    return () => c.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => { s.current?.applyOptions({ color }); }, [color]);
 
   useEffect(() => {
     if (!s.current) return;
     if (thr.current) s.current.removePriceLine(thr.current);
     thr.current = s.current.createPriceLine({
-      price: threshold, color: "#D86A4A", lineWidth: 1,
+      price: threshold, color: cssVar("--color-down", "#FB6F70"), lineWidth: 1,
       lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: "порог",
     });
   }, [threshold]);

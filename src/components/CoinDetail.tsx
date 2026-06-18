@@ -41,9 +41,10 @@ function CtlBtn({ onClick, disabled, children, active }: {
 }
 
 export function CoinDetail({
-  coin, onChange, onEdit, onRemove,
+  coin, paletteKey, onChange, onEdit, onRemove,
 }: {
   coin: Coin;
+  paletteKey: string;
   onChange: (patch: Partial<Coin>) => void;
   onEdit: () => void;
   onRemove: () => void;
@@ -95,11 +96,11 @@ export function CoinDetail({
           <span className="ml-auto">{st?.lastUpdate ? new Date(st.lastUpdate).toLocaleTimeString() : "—"}  ·  {st?.history.length ?? 0} точек</span>
         </div>
         <div className="flex-[3] min-h-[180px]">
-          <PriceChart history={st?.history ?? []} version={version} colorA={va.color} colorB={vb.color} />
+          <PriceChart key={`p-${paletteKey}`} history={st?.history ?? []} version={version} colorA={va.color} colorB={vb.color} />
         </div>
         <div className="h-px bg-white/5" />
         <div className="flex-[2] min-h-[120px]">
-          <SpreadChart history={st?.history ?? []} version={version} threshold={coin.threshold} color="var(--color-gold)" />
+          <SpreadChart key={`s-${paletteKey}`} history={st?.history ?? []} version={version} threshold={coin.threshold} />
         </div>
       </div>
 

@@ -7,7 +7,7 @@ export interface Config {
   settings: Settings;
 }
 
-export const DEFAULT_SETTINGS: Settings = { maxHistory: 3000, autoStart: true };
+export const DEFAULT_SETTINGS: Settings = { maxHistory: 3000, autoStart: true, palette: "slate" };
 
 export function uid(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
