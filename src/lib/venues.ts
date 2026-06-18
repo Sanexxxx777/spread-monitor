@@ -64,7 +64,7 @@ export const VENUES: Record<VenueId, Venue> = {
       ]);
       const bid = num(bt.bidPrice), ask = num(bt.askPrice);
       if (bid === undefined || ask === undefined) return null;
-      return { last: (bid + ask) / 2, bid, ask, funding: pi ? num(pi.lastFundingRate) : undefined, mark: pi ? num(pi.markPrice) : undefined };
+      return { last: (bid + ask) / 2, bid, ask, funding: pi ? num(pi.lastFundingRate) : undefined, mark: pi ? num(pi.markPrice) : undefined, fundingTime: pi ? num(pi.nextFundingTime) : undefined };
     },
   },
 
@@ -79,7 +79,7 @@ export const VENUES: Record<VenueId, Venue> = {
       const bid = num(bt.bidPrice), ask = num(bt.askPrice);
       if (bid === undefined || ask === undefined) return null;
       const p = Array.isArray(pi) ? pi[0] : pi;
-      return { last: (bid + ask) / 2, bid, ask, funding: p ? num(p.lastFundingRate) : undefined, mark: p ? num(p.markPrice) : undefined };
+      return { last: (bid + ask) / 2, bid, ask, funding: p ? num(p.lastFundingRate) : undefined, mark: p ? num(p.markPrice) : undefined, fundingTime: p ? num(p.nextFundingTime) : undefined };
     },
   },
 
@@ -96,6 +96,7 @@ export const VENUES: Record<VenueId, Venue> = {
       return {
         last, bid: num(r.bid1Price), ask: num(r.ask1Price),
         funding: m === "perp" ? num(r.fundingRate) : undefined,
+        fundingTime: m === "perp" ? num(r.nextFundingTime) : undefined,
         mark: num(r.markPrice), change24: num(r.price24hPcnt),
       };
     },
@@ -117,6 +118,7 @@ export const VENUES: Record<VenueId, Venue> = {
         last, bid: num(r.bidPx), ask: num(r.askPx),
         change24: open ? (last - open) / open : undefined,
         funding: fr ? num(fr.data?.[0]?.fundingRate) : undefined,
+        fundingTime: fr ? num(fr.data?.[0]?.fundingTime) : undefined,
       };
     },
   },
@@ -125,15 +127,23 @@ export const VENUES: Record<VenueId, Venue> = {
     id: "bitget", name: "Bitget", color: "#00E1C4", kind: "cex", markets: ["perp", "spot"],
     symbolFor: (b) => `${U(b)}USDT`,
     async quote(_c, s, m) {
-      const url = m === "spot"
-        ? `https://api.bitget.com/api/v2/spot/market/tickers?symbol=${s}`
-        : `https://api.bitget.com/api/v2/mix/market/ticker?symbol=${s}&productType=USDT-FUTURES`;
-      const d = await getJSON(url);
+      if (m === "spot") {
+        const d = await getJSON(`https://api.bitget.com/api/v2/spot/market/tickers?symbol=${s}`);
+        const r = d?.data?.[0];
+        if (!r) return null;
+        const last = num(r.lastPr);
+        if (last === undefined) return null;
+        return { last, bid: num(r.bidPr), ask: num(r.askPr), change24: num(r.change24h) };
+      }
+      const [d, ft] = await Promise.all([
+        getJSON(`https://api.bitget.com/api/v2/mix/market/ticker?symbol=${s}&productType=USDT-FUTURES`),
+        getJSON(`https://api.bitget.com/api/v2/mix/market/funding-time?symbol=${s}&productType=USDT-FUTURES`).catch(() => null),
+      ]);
       const r = d?.data?.[0];
       if (!r) return null;
       const last = num(r.lastPr);
       if (last === undefined) return null;
-      return { last, bid: num(r.bidPr), ask: num(r.askPr), funding: m === "perp" ? num(r.fundingRate) : undefined, change24: num(r.change24h) };
+      return { last, bid: num(r.bidPr), ask: num(r.askPr), funding: num(r.fundingRate), change24: num(r.change24h), fundingTime: ft ? num(ft.data?.[0]?.nextFundingTime) : undefined };
     },
   },
 
@@ -157,7 +167,9 @@ export const VENUES: Record<VenueId, Venue> = {
       if (!r) return null;
       const last = num(r.price);
       if (last === undefined) return null;
-      return { last, bid: num(r.bestBidPrice), ask: num(r.bestAskPrice), funding: fr ? num(fr.data?.value) : undefined };
+      const tp = fr ? num(fr.data?.timePoint) : undefined;
+      const gr = fr ? num(fr.data?.granularity) : undefined;
+      return { last, bid: num(r.bestBidPrice), ask: num(r.bestAskPrice), funding: fr ? num(fr.data?.value) : undefined, fundingTime: tp !== undefined && gr !== undefined ? tp + gr : undefined };
     },
   },
 
@@ -197,7 +209,7 @@ export const VENUES: Record<VenueId, Venue> = {
       if (!raw) return null;
       const last = num(raw.lastPrice);
       if (last === undefined) return null;
-      return { last, bid: num(raw.bid1), ask: num(raw.ask1), change24: num(raw.riseFallRate), funding: fr ? num(fr.data?.fundingRate) : undefined };
+      return { last, bid: num(raw.bid1), ask: num(raw.ask1), change24: num(raw.riseFallRate), funding: fr ? num(fr.data?.fundingRate) : undefined, fundingTime: fr ? num(fr.data?.nextSettleTime) : undefined };
     },
   },
 
@@ -213,12 +225,17 @@ export const VENUES: Record<VenueId, Venue> = {
         if (last === undefined) return null;
         return { last, bid: num(r.highest_bid), ask: num(r.lowest_ask), change24: (num(r.change_percentage) ?? 0) / 100 };
       }
-      const d = await getJSON(`https://api.gateio.ws/api/v4/futures/usdt/tickers?contract=${s}`);
+      const [d, cd] = await Promise.all([
+        getJSON(`https://api.gateio.ws/api/v4/futures/usdt/tickers?contract=${s}`),
+        getJSON(`https://api.gateio.ws/api/v4/futures/usdt/contracts/${s}`).catch(() => null),
+      ]);
       const r = Array.isArray(d) ? d[0] : null;
       if (!r) return null;
       const last = num(r.last);
       if (last === undefined) return null;
-      return { last, bid: num(r.highest_bid), ask: num(r.lowest_ask), funding: num(r.funding_rate), mark: num(r.mark_price), change24: (num(r.change_percentage) ?? 0) / 100 };
+      const cc = Array.isArray(cd) ? cd[0] : cd;
+      const fna = cc ? num(cc.funding_next_apply) : undefined; // секунды
+      return { last, bid: num(r.highest_bid), ask: num(r.lowest_ask), funding: num(r.funding_rate), mark: num(r.mark_price), change24: (num(r.change_percentage) ?? 0) / 100, fundingTime: fna ? fna * 1000 : undefined };
     },
   },
 };

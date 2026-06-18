@@ -40,6 +40,15 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
   user-select: none;
+  /* нативные контролы (стрелки number, чекбоксы) — в тёмном режиме → символы видны */
+  color-scheme: dark;
+}
+
+/* стрелки степпера у number-инпутов: ярче и всегда видны */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+  filter: brightness(1.6);
 }
 
 /* Слой матового стекла поверх нативного размытия окна */
@@ -111,6 +120,41 @@ button:active { transform: scale(0.97); }
 }
 .dialog-anim { transform: translate(-50%, -50%); }
 .dialog-anim[data-state="open"] { animation: dialogIn 0.18s ease-out both; }
+
+/* «магическая» кнопка темы: золотой градиент-перелив + бегущий блик + свечение */
+.magic-btn {
+  position: relative;
+  overflow: hidden;
+  color: #1a140e;
+  border: 1px solid var(--glass-border-hi);
+  background: linear-gradient(115deg,
+    var(--color-gold2) 0%, var(--color-gold) 42%, #fff4e0 52%,
+    var(--color-gold) 62%, var(--color-gold2) 100%);
+  background-size: 230% 100%;
+  animation: magicShift 7s linear infinite;
+  box-shadow: 0 0 14px -2px color-mix(in srgb, var(--color-gold) 50%, transparent);
+}
+@keyframes magicShift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 230% 50%; }
+}
+.magic-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.6) 50%, transparent 65%);
+  transform: translateX(-130%);
+  animation: magicSheen 4.5s ease-in-out infinite;
+}
+@keyframes magicSheen {
+  0%, 55% { transform: translateX(-130%); }
+  80%, 100% { transform: translateX(130%); }
+}
+.magic-btn:hover {
+  box-shadow: 0 0 22px 1px color-mix(in srgb, var(--color-gold) 60%, transparent);
+  filter: brightness(1.07);
+}
+.magic-btn:active { transform: scale(0.96); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }

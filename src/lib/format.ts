@@ -13,6 +13,19 @@ export function fmtPct(v?: number, digits = 2): string {
   return `${v >= 0 ? "+" : ""}${v.toFixed(digits)}%`;
 }
 
+/** Обратный отсчёт до момента (ms): «2ч 14м» / «14м» / «43с» / «сейчас». */
+export function fmtCountdown(ts?: number): string {
+  if (!ts || !Number.isFinite(ts)) return "";
+  const ms = ts - Date.now();
+  if (ms <= 0) return "сейчас";
+  const totalMin = Math.floor(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h > 0) return `${h}ч ${m}м`;
+  if (totalMin > 0) return `${m}м`;
+  return `${Math.floor(ms / 1000)}с`;
+}
+
 export function fmtMoney(v?: number): string {
   if (!v || !Number.isFinite(v)) return "—";
   if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;

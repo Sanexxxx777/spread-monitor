@@ -8,11 +8,12 @@ export interface Quote {
   last: number;
   bid?: number;
   ask?: number;
-  funding?: number;   // доля (0.0001 = 0.01%)
-  change24?: number;  // доля
+  funding?: number;     // доля (0.0001 = 0.01%)
+  fundingTime?: number; // ms времени следующего списания фандинга
+  change24?: number;    // доля
   mark?: number;
-  source?: string;    // напр. имя DEX-пула
-  liquidity?: number; // только DEX
+  source?: string;      // напр. имя DEX-пула
+  liquidity?: number;   // только DEX
 }
 
 export interface Coin {

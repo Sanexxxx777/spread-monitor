@@ -102,10 +102,10 @@ export default function App() {
         </span>
         <button
           onClick={cyclePalette}
-          className="no-drag absolute right-4 rounded-lg glass px-3 py-1 text-[11px] font-semibold text-ink hover:border-gold/50 transition-colors"
-          title="Сменить палитру"
+          className="magic-btn no-drag absolute right-4 rounded-lg px-4 py-1 text-[11px] font-bold uppercase tracking-[0.16em]"
+          title={`Тема: ${PALETTES[config.settings.palette]?.label ?? ""} — клик, чтобы сменить`}
         >
-          {PALETTES[config.settings.palette]?.label ?? "Тема"}
+          Theme
         </button>
       </div>
 

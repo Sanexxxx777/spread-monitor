@@ -1,7 +1,8 @@
 import { ArrowLeftRight, Eraser, Pencil, Play, Square, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { engine, useEngineVersion } from "@/lib/engine";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
-import { fmtMoney, fmtPct, fmtPrice } from "@/lib/format";
+import { fmtCountdown, fmtMoney, fmtPct, fmtPrice } from "@/lib/format";
 import { clampMarket, VENUE_LIST, VENUES } from "@/lib/venues";
 import type { Coin, Market, Quote, VenueId } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,8 @@ function quoteSub(q: Quote | undefined, isDex: boolean): string {
     if (q.liquidity) parts.push(`ликв ${fmtMoney(q.liquidity)}`);
   } else {
     if (q.funding !== undefined) parts.push(`fund ${(q.funding * 100).toFixed(3)}%`);
+    const cd = fmtCountdown(q.fundingTime);
+    if (cd) parts.push(`через ${cd}`);
     if (q.change24 !== undefined) parts.push(`24h ${fmtPct(q.change24 * 100)}`);
   }
   return parts.join("  ·  ") || "—";
@@ -77,6 +80,11 @@ export function CoinDetail({
   onRemove: () => void;
 }) {
   const version = useEngineVersion();
+  const [, force] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => force((n) => n + 1), 1000); // живой отсчёт фандинга
+    return () => clearInterval(id);
+  }, []);
   const st = engine.state(coin.id);
   const va = VENUES[coin.venueA];
   const vb = VENUES[coin.venueB];
