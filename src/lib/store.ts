@@ -20,12 +20,12 @@ export function defaultConfig(): Config {
       {
         id: uid(), base: "PEPE", label: "PEPE",
         contract: "0x6982508145454ce325ddbe47a25d4ec3d2311933", chain: "ethereum",
-        venueA: "binance", venueB: "gate",
+        venueA: "binance", venueB: "gate", marketA: "perp", marketB: "perp",
         threshold: 1, interval: 5, basis: "last", sound: true,
       },
       {
         id: uid(), base: "BTC", label: "BTC",
-        venueA: "binance", venueB: "hyperliquid",
+        venueA: "binance", venueB: "hyperliquid", marketA: "perp", marketB: "perp",
         threshold: 0.1, interval: 5, basis: "last", sound: false,
       },
     ],
@@ -46,7 +46,13 @@ export function loadConfig(): Config {
         settings.palette = DEFAULT_SETTINGS.palette;
         settings.v = SETTINGS_V;
       }
-      return { coins: c.coins ?? [], settings };
+      // нормализация старых монет без полей рынка
+      const coins = (c.coins ?? []).map((coin) => ({
+        ...coin,
+        marketA: coin.marketA ?? (coin.venueA === "dexscreener" ? "spot" : "perp"),
+        marketB: coin.marketB ?? (coin.venueB === "dexscreener" ? "spot" : "perp"),
+      }));
+      return { coins, settings };
     }
   } catch {
     /* ignore */

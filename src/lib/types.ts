@@ -2,6 +2,8 @@ export type VenueId =
   | "dexscreener" | "binance" | "bybit" | "okx" | "bitget"
   | "kucoin" | "hyperliquid" | "aster" | "mexc" | "gate";
 
+export type Market = "spot" | "perp";
+
 export interface Quote {
   last: number;
   bid?: number;
@@ -21,6 +23,8 @@ export interface Coin {
   chain?: string;      // сеть DEX
   venueA: VenueId;
   venueB: VenueId;
+  marketA: Market;     // спот или фьючерс для площадки A
+  marketB: Market;
   threshold: number;   // % порог сигнала
   interval: number;    // сек опрос
   basis: "last" | "exec";

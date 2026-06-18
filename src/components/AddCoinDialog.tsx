@@ -2,9 +2,10 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useState } from "react";
 import { ArrowLeftRight, X } from "lucide-react";
 import { Select } from "./ui/Select";
-import { VENUE_LIST } from "@/lib/venues";
+import { clampMarket, VENUE_LIST, VENUES } from "@/lib/venues";
 import { uid } from "@/lib/store";
-import type { Coin, VenueId } from "@/lib/types";
+import type { Coin, Market, VenueId } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const venueOptions = VENUE_LIST.map((v) => ({ value: v.id, label: v.name, color: v.color }));
 const chainOptions = ["ethereum", "bsc", "solana", "base", "arbitrum", "polygon", "avalanche", "optimism", "sui", "tron"]
@@ -22,6 +23,23 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const inputCls =
   "no-drag w-full rounded-xl glass px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/60 focus:outline-none focus:border-gold/60";
 
+function Seg({ id, value, onChange }: { id: VenueId; value: Market; onChange: (m: Market) => void }) {
+  const markets = VENUES[id].markets;
+  if (markets.length < 2) {
+    return <span className="text-[10px] uppercase tracking-wide text-muted">{markets[0] === "perp" ? "фьючерс" : "спот"}</span>;
+  }
+  return (
+    <div className="no-drag inline-flex rounded-lg glass p-0.5 text-[11px] font-semibold">
+      {markets.map((m) => (
+        <button key={m} type="button" onClick={() => onChange(m)}
+          className={cn("px-3 py-1 rounded-md transition-colors", value === m ? "bg-gold text-[#1a140e]" : "text-muted hover:text-ink")}>
+          {m === "perp" ? "Фьюч" : "Спот"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function AddCoinDialog({
   open, initial, onClose, onSave,
 }: {
@@ -34,6 +52,8 @@ export function AddCoinDialog({
   const [label, setLabel] = useState(initial?.label ?? "");
   const [venueA, setVenueA] = useState<VenueId>(initial?.venueA ?? "binance");
   const [venueB, setVenueB] = useState<VenueId>(initial?.venueB ?? "gate");
+  const [marketA, setMarketA] = useState<Market>(initial?.marketA ?? "perp");
+  const [marketB, setMarketB] = useState<Market>(initial?.marketB ?? "perp");
   const [contract, setContract] = useState(initial?.contract ?? "");
   const [chain, setChain] = useState(initial?.chain ?? "ethereum");
   const [threshold, setThreshold] = useState(String(initial?.threshold ?? 1));
@@ -54,6 +74,8 @@ export function AddCoinDialog({
       contract: dex ? contract.trim() : undefined,
       chain: dex ? chain : undefined,
       venueA, venueB,
+      marketA: clampMarket(venueA, marketA),
+      marketB: clampMarket(venueB, marketB),
       threshold: parseFloat(threshold) || 0,
       interval: Math.max(1, parseFloat(interval) || 5),
       basis, sound,
@@ -84,20 +106,30 @@ export function AddCoinDialog({
               </Field>
             </div>
 
-            <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
-              <Field label="Площадка A">
-                <Select value={venueA} onChange={(v) => setVenueA(v as VenueId)} options={venueOptions} />
-              </Field>
+            <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2">
+              <div className="flex flex-col gap-1.5">
+                <Field label="Площадка A">
+                  <Select value={venueA}
+                    onChange={(v) => { setVenueA(v as VenueId); setMarketA((m) => clampMarket(v as VenueId, m)); }}
+                    options={venueOptions} />
+                </Field>
+                <Seg id={venueA} value={marketA} onChange={setMarketA} />
+              </div>
               <button
-                onClick={() => { setVenueA(venueB); setVenueB(venueA); }}
-                className="no-drag mb-1 rounded-xl glass p-2.5 text-muted hover:text-gold hover:border-gold/40"
+                onClick={() => { const va = venueA, ma = marketA; setVenueA(venueB); setMarketA(marketB); setVenueB(va); setMarketB(ma); }}
+                className="no-drag mt-7 rounded-xl glass p-2.5 text-muted hover:text-gold hover:border-gold/40"
                 title="Поменять местами"
               >
                 <ArrowLeftRight size={16} />
               </button>
-              <Field label="Площадка B">
-                <Select value={venueB} onChange={(v) => setVenueB(v as VenueId)} options={venueOptions} />
-              </Field>
+              <div className="flex flex-col gap-1.5">
+                <Field label="Площадка B">
+                  <Select value={venueB}
+                    onChange={(v) => { setVenueB(v as VenueId); setMarketB((m) => clampMarket(v as VenueId, m)); }}
+                    options={venueOptions} />
+                </Field>
+                <Seg id={venueB} value={marketB} onChange={setMarketB} />
+              </div>
             </div>
 
             {dex && (

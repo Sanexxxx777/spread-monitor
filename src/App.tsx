@@ -114,6 +114,7 @@ export default function App() {
           coins={config.coins}
           selectedId={selectedId}
           onSelect={setSelectedId}
+          onRemove={removeCoin}
           onAdd={() => setDialog({ open: true, edit: null })}
         />
         {selected ? (

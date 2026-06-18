@@ -115,8 +115,8 @@ class Engine {
     if (!st) return;
     try {
       const [qa, qb] = await Promise.all([
-        VENUES[c.venueA].quote(c, symbolForVenue(c, c.venueA)).catch(() => null),
-        VENUES[c.venueB].quote(c, symbolForVenue(c, c.venueB)).catch(() => null),
+        VENUES[c.venueA].quote(c, symbolForVenue(c, c.venueA, c.marketA), c.marketA).catch(() => null),
+        VENUES[c.venueB].quote(c, symbolForVenue(c, c.venueB, c.marketB), c.marketB).catch(() => null),
       ]);
       st.qa = qa ?? undefined;
       st.qb = qb ?? undefined;

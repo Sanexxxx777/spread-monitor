@@ -2,8 +2,9 @@ import { ArrowLeftRight, Eraser, Pencil, Play, Square, Trash2 } from "lucide-rea
 import { engine, useEngineVersion } from "@/lib/engine";
 import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { fmtMoney, fmtPct, fmtPrice } from "@/lib/format";
-import { VENUE_LIST, VENUES } from "@/lib/venues";
-import type { Coin, Quote, VenueId } from "@/lib/types";
+import { clampMarket, VENUE_LIST, VENUES } from "@/lib/venues";
+import type { Coin, Market, Quote, VenueId } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { Select } from "./ui/Select";
 import { Kpi } from "./Kpi";
 import { PriceChart, SpreadChart } from "./Charts";
@@ -41,6 +42,31 @@ function CtlBtn({ onClick, disabled, children, active }: {
   );
 }
 
+function MarketSeg({ id, value, onChange }: { id: VenueId; value: Market; onChange: (m: Market) => void }) {
+  const markets = VENUES[id].markets;
+  if (markets.length < 2) {
+    return (
+      <span className="text-[10px] uppercase tracking-wide text-muted px-1 py-1">
+        {markets[0] === "perp" ? "фьючерс" : "спот"}
+      </span>
+    );
+  }
+  return (
+    <div className="no-drag inline-flex rounded-lg glass p-0.5 text-[11px] font-semibold">
+      {markets.map((m) => (
+        <button
+          key={m}
+          onClick={() => onChange(m)}
+          className={cn("px-3 py-1 rounded-md transition-colors",
+            value === m ? "bg-gold text-[#1a140e]" : "text-muted hover:text-ink")}
+        >
+          {m === "perp" ? "Фьюч" : "Спот"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function CoinDetail({
   coin, paletteKey, onChange, onEdit, onRemove,
 }: {
@@ -66,25 +92,33 @@ export function CoinDetail({
       {/* Шапка: монета + выбор площадок A ⇄ B */}
       <div className="anim-in flex items-center justify-between gap-4 flex-wrap" style={{ animationDelay: "0ms" }}>
         <h1 className="font-display text-[34px] leading-none font-bold text-ink">{coin.label}</h1>
-        <div className="flex items-center gap-2.5">
-          <Select value={coin.venueA} onChange={(v) => onChange({ venueA: v as VenueId })}
-            options={venueOptions} className="min-w-[170px]" ariaLabel="Площадка A" />
+        <div className="flex items-start gap-2.5">
+          <div className="flex flex-col items-end gap-1.5">
+            <Select value={coin.venueA}
+              onChange={(v) => onChange({ venueA: v as VenueId, marketA: clampMarket(v as VenueId, coin.marketA) })}
+              options={venueOptions} className="min-w-[170px]" ariaLabel="Площадка A" />
+            <MarketSeg id={coin.venueA} value={coin.marketA} onChange={(m) => onChange({ marketA: m })} />
+          </div>
           <button
-            onClick={() => onChange({ venueA: coin.venueB, venueB: coin.venueA })}
-            className="no-drag rounded-xl glass p-2.5 text-muted hover:text-gold hover:border-gold/40"
+            onClick={() => onChange({ venueA: coin.venueB, venueB: coin.venueA, marketA: coin.marketB, marketB: coin.marketA })}
+            className="no-drag mt-1.5 rounded-xl glass p-2.5 text-muted hover:text-gold hover:border-gold/40"
             title="Поменять местами"
           >
             <ArrowLeftRight size={16} />
           </button>
-          <Select value={coin.venueB} onChange={(v) => onChange({ venueB: v as VenueId })}
-            options={venueOptions} className="min-w-[170px]" ariaLabel="Площадка B" />
+          <div className="flex flex-col items-start gap-1.5">
+            <Select value={coin.venueB}
+              onChange={(v) => onChange({ venueB: v as VenueId, marketB: clampMarket(v as VenueId, coin.marketB) })}
+              options={venueOptions} className="min-w-[170px]" ariaLabel="Площадка B" />
+            <MarketSeg id={coin.venueB} value={coin.marketB} onChange={(m) => onChange({ marketB: m })} />
+          </div>
         </div>
       </div>
 
       {/* KPI */}
       <div className="anim-in grid grid-cols-4 gap-4" style={{ animationDelay: "60ms" }}>
-        <Kpi label={va.name} value={fmtPrice(aPriceA)} sub={quoteSub(st?.qa, va.kind === "dex")} accent="var(--color-ink)" />
-        <Kpi label={vb.name} value={fmtPrice(aPriceB)} sub={quoteSub(st?.qb, vb.kind === "dex")} accent="var(--color-ink)" />
+        <Kpi label={`${va.name} · ${coin.marketA === "perp" ? "фьюч" : "спот"}`} value={fmtPrice(aPriceA)} sub={quoteSub(st?.qa, va.kind === "dex")} accent="var(--color-ink)" />
+        <Kpi label={`${vb.name} · ${coin.marketB === "perp" ? "фьюч" : "спот"}`} value={fmtPrice(aPriceB)} sub={quoteSub(st?.qb, vb.kind === "dex")} accent="var(--color-ink)" />
         <Kpi label="Спред B / A" value={fmtPct(aSpread)} sub={`база: ${coin.basis === "exec" ? "стакан" : "last"}`} accent={spreadColor} highlight={hit} />
         <Kpi label="Порог"
           value={`${coin.threshold > 0 ? "+" : ""}${coin.threshold}%`}
@@ -139,7 +173,7 @@ export function CoinDetail({
             : <CtlBtn onClick={() => engine.start(coin.id)} active><Play size={15} /> Старт</CtlBtn>}
           <CtlBtn onClick={() => engine.clear(coin.id)}><Eraser size={15} /> Очистить</CtlBtn>
           <CtlBtn onClick={onEdit}><Pencil size={15} /> Изменить</CtlBtn>
-          <CtlBtn onClick={onRemove}><Trash2 size={15} /></CtlBtn>
+          <CtlBtn onClick={onRemove}><Trash2 size={15} /> Удалить</CtlBtn>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { engine, useEngineVersion } from "@/lib/engine";
 import { fmtPct } from "@/lib/format";
 import { VENUES } from "@/lib/venues";
@@ -6,11 +6,12 @@ import type { Coin } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function Sidebar({
-  coins, selectedId, onSelect, onAdd,
+  coins, selectedId, onSelect, onRemove, onAdd,
 }: {
   coins: Coin[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onRemove: (id: string) => void;
   onAdd: () => void;
 }) {
   useEngineVersion();
@@ -40,11 +41,13 @@ export function Sidebar({
           const sel = selectedId === c.id;
           const color = spread === undefined ? undefined : spread >= 0 ? "var(--color-up)" : "var(--color-down)";
           return (
-            <button
+            <div
               key={c.id}
+              role="button"
+              tabIndex={0}
               onClick={() => onSelect(c.id)}
               className={cn(
-                "no-drag flex items-center justify-between rounded-xl px-3 py-2.5 text-left transition-colors",
+                "group no-drag relative flex items-center justify-between rounded-xl px-3 py-2.5 text-left cursor-pointer transition-colors",
                 sel ? "bg-gold/15 ring-1 ring-gold/30" : "hover:bg-white/[0.04]",
               )}
             >
@@ -61,10 +64,17 @@ export function Sidebar({
                   {VENUES[c.venueB].name.split(" ")[0]}
                 </div>
               </div>
-              <div className="mono text-sm font-semibold shrink-0 ml-2" style={{ color }}>
+              <div className="mono text-sm font-semibold shrink-0 ml-2 group-hover:opacity-0 transition-opacity" style={{ color }}>
                 {fmtPct(spread)}
               </div>
-            </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onRemove(c.id); }}
+                className="no-drag absolute right-2.5 opacity-0 group-hover:opacity-100 rounded-lg p-1.5 text-muted hover:text-down hover:bg-white/10 transition-all"
+                title="Удалить пару"
+              >
+                <X size={15} />
+              </button>
+            </div>
           );
         })}
       </div>
