@@ -122,3 +122,4 @@ button:active { transform: scale(0.97); }
 ::-webkit-scrollbar-track { background: transparent; }
 
 .mono { font-family: var(--font-mono); font-feature-settings: "tnum"; }
+.font-display { font-family: "Playfair Display", Georgia, "Times New Roman", serif; }

@@ -11,22 +11,23 @@ export const PALETTES: Record<string, Palette> = {
   setup: {
     label: "Setup Manager",
     vars: {
-      // тёплое золото gamma, но панели заметно светлее фона + золотая кромка → НЕ сливается
-      "--app-bg": "radial-gradient(1200px 820px at 14% -6%, #2C2118, #120E09 60%)",
-      "--color-base": "#120E09",
-      "--color-ink": "#F4D8BE",
-      "--color-muted": "#C0A488",
-      "--color-gold": "#E0A45C",
-      "--color-gold2": "#C97D45",
+      // дизайн-система gamma (как в Setup Manager): warm gold #D4A574, text #F2D4BA.
+      // Панели заметно светлее фона + золотистая кромка → контраст, не сливается.
+      "--app-bg": "radial-gradient(1200px 820px at 14% -6%, #2A2620, #15120D 62%)",
+      "--color-base": "#15120D",
+      "--color-ink": "#F2D4BA",
+      "--color-muted": "#BDA189",
+      "--color-gold": "#D4A574",
+      "--color-gold2": "#B08450",
       "--color-up": "#8FBC5A",
-      "--color-down": "#E07555",
-      "--glass-bg": "rgba(50, 40, 30, 0.62)",
-      "--glass-bg-strong": "rgba(36, 28, 20, 0.90)",
-      "--glass-border": "rgba(224, 164, 92, 0.20)",
-      "--glass-border-hi": "rgba(224, 164, 92, 0.55)",
-      "--glass-shadow": "0 16px 40px rgba(0, 0, 0, 0.5)",
-      "--chart-text": "#C0A488",
-      "--chart-grid": "rgba(224, 164, 92, 0.08)",
+      "--color-down": "#D8694A",
+      "--glass-bg": "rgba(46, 41, 34, 0.72)",
+      "--glass-bg-strong": "rgba(32, 28, 22, 0.92)",
+      "--glass-border": "rgba(212, 165, 116, 0.22)",
+      "--glass-border-hi": "rgba(212, 165, 116, 0.55)",
+      "--glass-shadow": "0 16px 42px rgba(0, 0, 0, 0.52)",
+      "--chart-text": "#BDA189",
+      "--chart-grid": "rgba(212, 165, 116, 0.08)",
     },
   },
   slate: {

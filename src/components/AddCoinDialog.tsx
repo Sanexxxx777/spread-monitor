@@ -66,7 +66,7 @@ export function AddCoinDialog({
         <Dialog.Overlay className="overlay-anim fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
         <Dialog.Content className="dialog-anim fixed left-1/2 top-1/2 z-50 w-[480px] max-w-[92vw] glass-strong rounded-3xl p-6 shadow-2xl">
           <div className="flex items-center justify-between mb-5">
-            <Dialog.Title className="text-lg font-bold text-ink">
+            <Dialog.Title className="font-display text-xl font-bold text-ink">
               {initial ? "Редактировать пару" : "Новая пара площадок"}
             </Dialog.Title>
             <Dialog.Close className="no-drag rounded-lg p-1.5 text-muted hover:bg-white/10">

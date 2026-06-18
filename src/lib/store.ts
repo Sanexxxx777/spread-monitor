@@ -7,7 +7,7 @@ export interface Config {
   settings: Settings;
 }
 
-const SETTINGS_V = 2;
+const SETTINGS_V = 3;
 export const DEFAULT_SETTINGS: Settings = { maxHistory: 3000, autoStart: true, palette: "setup", v: SETTINGS_V };
 
 export function uid(): string {
@@ -38,9 +38,11 @@ export function loadConfig(): Config {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const c = JSON.parse(raw) as Partial<Config>;
-      const settings = { ...DEFAULT_SETTINGS, ...(c.settings ?? {}) };
-      // разовая миграция: старые конфиги переводим на палитру по умолчанию (Setup Manager)
-      if (settings.v !== SETTINGS_V) {
+      const stored: Partial<Settings> = c.settings ?? {};
+      const settings = { ...DEFAULT_SETTINGS, ...stored };
+      // разовая миграция палитры: проверяем СЫРОЕ stored.v (после merge v подтянулось
+      // бы из дефолта и условие не сработало бы — это и был баг «цвета остались старые»).
+      if ((stored.v ?? 0) < SETTINGS_V) {
         settings.palette = DEFAULT_SETTINGS.palette;
         settings.v = SETTINGS_V;
       }

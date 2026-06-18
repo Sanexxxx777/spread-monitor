@@ -1,5 +1,6 @@
 import { ArrowLeftRight, Eraser, Pencil, Play, Square, Trash2 } from "lucide-react";
 import { engine, useEngineVersion } from "@/lib/engine";
+import { useAnimatedNumber } from "@/hooks/useAnimatedNumber";
 import { fmtMoney, fmtPct, fmtPrice } from "@/lib/format";
 import { VENUE_LIST, VENUES } from "@/lib/venues";
 import type { Coin, Quote, VenueId } from "@/lib/types";
@@ -56,12 +57,15 @@ export function CoinDetail({
   const spread = st?.spread;
   const spreadColor = spread === undefined ? "var(--color-ink)" : spread >= 0 ? "var(--color-up)" : "var(--color-down)";
   const hit = spread !== undefined && (coin.threshold >= 0 ? spread >= coin.threshold : spread <= coin.threshold);
+  const aPriceA = useAnimatedNumber(st?.priceA);
+  const aPriceB = useAnimatedNumber(st?.priceB);
+  const aSpread = useAnimatedNumber(spread);
 
   return (
     <div className="flex-1 min-w-0 flex flex-col gap-5 overflow-hidden">
       {/* Шапка: монета + выбор площадок A ⇄ B */}
       <div className="anim-in flex items-center justify-between gap-4 flex-wrap" style={{ animationDelay: "0ms" }}>
-        <h1 className="text-3xl font-bold tracking-tight text-ink">{coin.label}</h1>
+        <h1 className="font-display text-[34px] leading-none font-bold text-ink">{coin.label}</h1>
         <div className="flex items-center gap-2.5">
           <Select value={coin.venueA} onChange={(v) => onChange({ venueA: v as VenueId })}
             options={venueOptions} className="min-w-[170px]" ariaLabel="Площадка A" />
@@ -79,9 +83,9 @@ export function CoinDetail({
 
       {/* KPI */}
       <div className="anim-in grid grid-cols-4 gap-4" style={{ animationDelay: "60ms" }}>
-        <Kpi label={va.name} value={fmtPrice(st?.priceA)} sub={quoteSub(st?.qa, va.kind === "dex")} accent="var(--color-ink)" />
-        <Kpi label={vb.name} value={fmtPrice(st?.priceB)} sub={quoteSub(st?.qb, vb.kind === "dex")} accent="var(--color-ink)" />
-        <Kpi label="Спред B / A" value={fmtPct(spread)} sub={`база: ${coin.basis === "exec" ? "стакан" : "last"}`} accent={spreadColor} highlight={hit} />
+        <Kpi label={va.name} value={fmtPrice(aPriceA)} sub={quoteSub(st?.qa, va.kind === "dex")} accent="var(--color-ink)" />
+        <Kpi label={vb.name} value={fmtPrice(aPriceB)} sub={quoteSub(st?.qb, vb.kind === "dex")} accent="var(--color-ink)" />
+        <Kpi label="Спред B / A" value={fmtPct(aSpread)} sub={`база: ${coin.basis === "exec" ? "стакан" : "last"}`} accent={spreadColor} highlight={hit} />
         <Kpi label="Порог"
           value={`${coin.threshold > 0 ? "+" : ""}${coin.threshold}%`}
           sub={st?.error ? st.error : st?.running ? "мониторинг идёт" : "остановлено"}
