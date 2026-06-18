@@ -43,7 +43,7 @@ export function Select({
         <RS.Content
           position="popper"
           sideOffset={8}
-          className="z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl glass-strong p-1.5 shadow-2xl"
+          className="pop-anim z-50 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl glass-strong p-1.5 shadow-2xl"
         >
           <RS.Viewport className="max-h-72">
             {options.map((o) => (

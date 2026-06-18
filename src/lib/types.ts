@@ -38,4 +38,5 @@ export interface Settings {
   maxHistory: number;
   autoStart: boolean;
   palette: string;
+  v?: number; // версия настроек (для разовых миграций палитры)
 }

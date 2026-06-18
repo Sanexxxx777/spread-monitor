@@ -8,6 +8,27 @@ export interface Palette {
 }
 
 export const PALETTES: Record<string, Palette> = {
+  setup: {
+    label: "Setup Manager",
+    vars: {
+      // тёплое золото gamma, но панели заметно светлее фона + золотая кромка → НЕ сливается
+      "--app-bg": "radial-gradient(1200px 820px at 14% -6%, #2C2118, #120E09 60%)",
+      "--color-base": "#120E09",
+      "--color-ink": "#F4D8BE",
+      "--color-muted": "#C0A488",
+      "--color-gold": "#E0A45C",
+      "--color-gold2": "#C97D45",
+      "--color-up": "#8FBC5A",
+      "--color-down": "#E07555",
+      "--glass-bg": "rgba(50, 40, 30, 0.62)",
+      "--glass-bg-strong": "rgba(36, 28, 20, 0.90)",
+      "--glass-border": "rgba(224, 164, 92, 0.20)",
+      "--glass-border-hi": "rgba(224, 164, 92, 0.55)",
+      "--glass-shadow": "0 16px 40px rgba(0, 0, 0, 0.5)",
+      "--chart-text": "#C0A488",
+      "--chart-grid": "rgba(224, 164, 92, 0.08)",
+    },
+  },
   slate: {
     label: "Slate",
     vars: {
@@ -90,7 +111,7 @@ export const PALETTES: Record<string, Palette> = {
   },
 };
 
-export const PALETTE_ORDER = ["slate", "carbon", "aurora", "graphite"] as const;
+export const PALETTE_ORDER = ["setup", "slate", "carbon", "aurora", "graphite"] as const;
 export type PaletteName = (typeof PALETTE_ORDER)[number];
 
 export function applyPalette(name: string): void {

@@ -118,6 +118,7 @@ export default function App() {
         />
         {selected ? (
           <CoinDetail
+            key={selected.id}
             coin={selected}
             paletteKey={config.settings.palette}
             onChange={(patch) => patchCoin(selected.id, patch)}

@@ -7,7 +7,8 @@ export interface Config {
   settings: Settings;
 }
 
-export const DEFAULT_SETTINGS: Settings = { maxHistory: 3000, autoStart: true, palette: "slate" };
+const SETTINGS_V = 2;
+export const DEFAULT_SETTINGS: Settings = { maxHistory: 3000, autoStart: true, palette: "setup", v: SETTINGS_V };
 
 export function uid(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -37,10 +38,13 @@ export function loadConfig(): Config {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const c = JSON.parse(raw) as Partial<Config>;
-      return {
-        coins: c.coins ?? [],
-        settings: { ...DEFAULT_SETTINGS, ...(c.settings ?? {}) },
-      };
+      const settings = { ...DEFAULT_SETTINGS, ...(c.settings ?? {}) };
+      // разовая миграция: старые конфиги переводим на палитру по умолчанию (Setup Manager)
+      if (settings.v !== SETTINGS_V) {
+        settings.palette = DEFAULT_SETTINGS.palette;
+        settings.v = SETTINGS_V;
+      }
+      return { coins: c.coins ?? [], settings };
     }
   } catch {
     /* ignore */

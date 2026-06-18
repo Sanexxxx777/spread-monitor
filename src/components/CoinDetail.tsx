@@ -60,7 +60,7 @@ export function CoinDetail({
   return (
     <div className="flex-1 min-w-0 flex flex-col gap-5 overflow-hidden">
       {/* Шапка: монета + выбор площадок A ⇄ B */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="anim-in flex items-center justify-between gap-4 flex-wrap" style={{ animationDelay: "0ms" }}>
         <h1 className="text-3xl font-bold tracking-tight text-ink">{coin.label}</h1>
         <div className="flex items-center gap-2.5">
           <Select value={coin.venueA} onChange={(v) => onChange({ venueA: v as VenueId })}
@@ -78,7 +78,7 @@ export function CoinDetail({
       </div>
 
       {/* KPI */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="anim-in grid grid-cols-4 gap-4" style={{ animationDelay: "60ms" }}>
         <Kpi label={va.name} value={fmtPrice(st?.priceA)} sub={quoteSub(st?.qa, va.kind === "dex")} accent="var(--color-ink)" />
         <Kpi label={vb.name} value={fmtPrice(st?.priceB)} sub={quoteSub(st?.qb, vb.kind === "dex")} accent="var(--color-ink)" />
         <Kpi label="Спред B / A" value={fmtPct(spread)} sub={`база: ${coin.basis === "exec" ? "стакан" : "last"}`} accent={spreadColor} highlight={hit} />
@@ -89,7 +89,7 @@ export function CoinDetail({
       </div>
 
       {/* Графики */}
-      <div className="glass rounded-2xl p-4 flex flex-col gap-3 flex-1 min-h-0">
+      <div className="anim-in glass rounded-2xl p-4 flex flex-col gap-3 flex-1 min-h-0" style={{ animationDelay: "120ms" }}>
         <div className="flex items-center gap-4 text-[11px] text-muted px-1">
           <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: va.color }} />{va.name}</span>
           <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full" style={{ background: vb.color }} />{vb.name}</span>
@@ -105,7 +105,7 @@ export function CoinDetail({
       </div>
 
       {/* Управление */}
-      <div className="glass rounded-2xl px-5 py-4 flex items-center gap-3 flex-wrap">
+      <div className="anim-in glass rounded-2xl px-5 py-4 flex items-center gap-3 flex-wrap" style={{ animationDelay: "180ms" }}>
         <div className="flex items-center gap-2">
           <span className="text-[11px] uppercase tracking-wide text-muted">Порог %</span>
           <input

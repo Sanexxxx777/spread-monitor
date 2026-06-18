@@ -9,8 +9,7 @@ export function Kpi({
 }) {
   return (
     <div
-      className="glass rounded-2xl px-5 py-4 flex flex-col gap-1.5 transition-colors"
-      style={highlight ? { borderColor: "rgba(212,145,92,0.5)" } : undefined}
+      className={`glass lift rounded-2xl px-5 py-4 flex flex-col gap-1.5${highlight ? " alert-glow" : ""}`}
     >
       <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted">{label}</div>
       <div className="mono text-[26px] leading-none font-bold" style={{ color: accent }}>
