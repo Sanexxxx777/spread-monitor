@@ -1,0 +1,25 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Возможности окна: window-effects + HTTP к биржевым API",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-effects",
+    {
+      "identifier": "http:default",
+      "allow": [
+        { "url": "https://*.binance.com/" },
+        { "url": "https://*.bybit.com/" },
+        { "url": "https://*.okx.com/" },
+        { "url": "https://*.bitget.com/" },
+        { "url": "https://*.kucoin.com/" },
+        { "url": "https://*.hyperliquid.xyz/" },
+        { "url": "https://*.asterdex.com/" },
+        { "url": "https://*.mexc.com/" },
+        { "url": "https://*.gateio.ws/" },
+        { "url": "https://*.dexscreener.com/" }
+      ]
+    }
+  ]
+}
