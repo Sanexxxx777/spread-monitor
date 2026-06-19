@@ -45,22 +45,23 @@ function CtlBtn({ onClick, disabled, children, active }: {
   );
 }
 
-function MarketSeg({ id, value, onChange }: { id: VenueId; value: Market; onChange: (m: Market) => void }) {
+function MarketSeg({ id, value, onChange, plain }: { id: VenueId; value: Market; onChange: (m: Market) => void; plain?: boolean }) {
   const markets = VENUES[id].markets;
   if (markets.length < 2) {
     return (
-      <span className="text-[10px] uppercase tracking-wide text-muted px-1 py-1">
-        {markets[0] === "perp" ? "фьючерс" : "спот"}
-      </span>
+      <div className="text-center text-[10px] uppercase tracking-wide text-muted py-1">
+        {markets[0] === "perp" ? "только фьючерс" : "только спот"}
+      </div>
     );
   }
   return (
-    <div className="no-drag inline-flex rounded-lg glass p-0.5 text-[11px] font-semibold">
+    <div className={cn("no-drag inline-flex text-[11px] font-semibold",
+      plain ? "w-full gap-1" : "rounded-lg glass p-0.5")}>
       {markets.map((m) => (
         <button
           key={m}
           onClick={() => onChange(m)}
-          className={cn("px-3 py-1 rounded-md transition-colors",
+          className={cn("rounded-md transition-colors", plain ? "flex-1 px-2 py-1" : "px-3 py-1",
             value === m ? "bg-gold text-[#1a140e]" : "text-muted hover:text-ink")}
         >
           {m === "perp" ? "Фьюч" : "Спот"}
@@ -100,25 +101,31 @@ export function CoinDetail({
       {/* Шапка: монета + выбор площадок A ⇄ B */}
       <div className="anim-in flex items-center justify-between gap-4 flex-wrap" style={{ animationDelay: "0ms" }}>
         <h1 className="font-display text-[34px] leading-none font-bold text-ink">{coin.label}</h1>
-        <div className="flex items-start gap-2.5">
-          <div className="flex flex-col items-end gap-1.5">
-            <Select value={coin.venueA}
+        <div className="flex items-stretch gap-2.5">
+          <div className="flex flex-col rounded-2xl glass overflow-hidden min-w-[190px]">
+            <Select bare value={coin.venueA}
               onChange={(v) => onChange({ venueA: v as VenueId, marketA: clampMarket(v as VenueId, coin.marketA) })}
-              options={venueOptions} className="min-w-[170px]" ariaLabel="Площадка A" />
-            <MarketSeg id={coin.venueA} value={coin.marketA} onChange={(m) => onChange({ marketA: m })} />
+              options={venueOptions} className="w-full rounded-none" ariaLabel="Площадка A" />
+            <div className="h-px bg-white/10" />
+            <div className="p-1.5">
+              <MarketSeg plain id={coin.venueA} value={coin.marketA} onChange={(m) => onChange({ marketA: m })} />
+            </div>
           </div>
           <button
             onClick={() => onChange({ venueA: coin.venueB, venueB: coin.venueA, marketA: coin.marketB, marketB: coin.marketA })}
-            className="no-drag mt-1.5 rounded-xl glass p-2.5 text-muted hover:text-gold hover:border-gold/40"
+            className="no-drag self-center rounded-xl glass p-2.5 text-muted hover:text-gold hover:border-gold/40"
             title="Поменять местами"
           >
             <ArrowLeftRight size={16} />
           </button>
-          <div className="flex flex-col items-start gap-1.5">
-            <Select value={coin.venueB}
+          <div className="flex flex-col rounded-2xl glass overflow-hidden min-w-[190px]">
+            <Select bare value={coin.venueB}
               onChange={(v) => onChange({ venueB: v as VenueId, marketB: clampMarket(v as VenueId, coin.marketB) })}
-              options={venueOptions} className="min-w-[170px]" ariaLabel="Площадка B" />
-            <MarketSeg id={coin.venueB} value={coin.marketB} onChange={(m) => onChange({ marketB: m })} />
+              options={venueOptions} className="w-full rounded-none" ariaLabel="Площадка B" />
+            <div className="h-px bg-white/10" />
+            <div className="p-1.5">
+              <MarketSeg plain id={coin.venueB} value={coin.marketB} onChange={(m) => onChange({ marketB: m })} />
+            </div>
           </div>
         </div>
       </div>

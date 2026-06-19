@@ -75,11 +75,20 @@ export default function App() {
   const selected = config.coins.find((c) => c.id === selectedId) ?? null;
 
   function patchCoin(id: string, patch: Partial<Coin>) {
+    // смена площадки/рынка = другой инструмент → чистим историю графика
+    if (patch.venueA || patch.venueB || patch.marketA || patch.marketB) {
+      engine.clear(id);
+    }
     setConfig((c) => ({ ...c, coins: c.coins.map((x) => (x.id === id ? { ...x, ...patch } : x)) }));
   }
   function saveCoin(coin: Coin) {
     setConfig((c) => {
-      const exists = c.coins.some((x) => x.id === coin.id);
+      const old = c.coins.find((x) => x.id === coin.id);
+      if (old && (old.venueA !== coin.venueA || old.venueB !== coin.venueB ||
+        old.marketA !== coin.marketA || old.marketB !== coin.marketB || old.contract !== coin.contract)) {
+        engine.clear(coin.id);
+      }
+      const exists = !!old;
       return {
         ...c,
         coins: exists ? c.coins.map((x) => (x.id === coin.id ? coin : x)) : [...c.coins, coin],
@@ -96,13 +105,14 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col text-ink">
-      <div data-tauri-drag-region className="h-9 shrink-0 drag flex items-center justify-center relative">
-        <span className="text-[11px] font-semibold tracking-[0.22em] text-muted uppercase pointer-events-none">
+      <div data-tauri-drag-region className="h-9 shrink-0 drag flex items-center gap-2 px-4">
+        <div className="w-[76px] shrink-0" />
+        <span className="flex-1 text-center text-[11px] font-semibold tracking-[0.22em] text-muted uppercase pointer-events-none truncate">
           Spread Monitor
         </span>
         <button
           onClick={cyclePalette}
-          className="magic-btn no-drag absolute right-4 rounded-lg px-4 py-1 text-[11px] font-bold uppercase tracking-[0.16em]"
+          className="magic-btn no-drag shrink-0 rounded-lg px-4 py-1 text-[11px] font-bold uppercase tracking-[0.16em]"
           title={`Тема: ${PALETTES[config.settings.palette]?.label ?? ""} — клик, чтобы сменить`}
         >
           Theme

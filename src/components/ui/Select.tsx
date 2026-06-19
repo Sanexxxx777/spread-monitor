@@ -9,13 +9,14 @@ export interface Option {
 }
 
 export function Select({
-  value, onChange, options, className, ariaLabel,
+  value, onChange, options, className, ariaLabel, bare,
 }: {
   value: string;
   onChange: (v: string) => void;
   options: Option[];
   className?: string;
   ariaLabel?: string;
+  bare?: boolean;
 }) {
   const current = options.find((o) => o.value === value);
   return (
@@ -24,8 +25,10 @@ export function Select({
         aria-label={ariaLabel}
         className={cn(
           "no-drag inline-flex items-center justify-between gap-2 rounded-xl px-3.5 py-2.5",
-          "text-sm font-medium text-ink/95 glass transition-colors",
-          "hover:border-gold/40 focus:outline-none focus:border-gold/60 data-[state=open]:border-gold/60",
+          "text-sm font-medium text-ink/95 transition-colors focus:outline-none",
+          bare
+            ? "bg-transparent hover:bg-white/5 data-[state=open]:bg-white/5"
+            : "glass hover:border-gold/40 focus:border-gold/60 data-[state=open]:border-gold/60",
           className,
         )}
       >

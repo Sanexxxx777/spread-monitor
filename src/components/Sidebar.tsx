@@ -64,16 +64,16 @@ export function Sidebar({
                   {VENUES[c.venueB].name.split(" ")[0]}
                 </div>
               </div>
-              <div className="mono text-sm font-semibold shrink-0 ml-2 group-hover:opacity-0 transition-opacity" style={{ color }}>
-                {fmtPct(spread)}
+              <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                <div className="mono text-sm font-semibold" style={{ color }}>{fmtPct(spread)}</div>
+                <button
+                  onClick={(e) => { e.stopPropagation(); onRemove(c.id); }}
+                  className="no-drag -mr-1 opacity-0 group-hover:opacity-100 rounded-md p-1 text-muted hover:text-down hover:bg-white/10 transition-opacity"
+                  title="Удалить пару"
+                >
+                  <X size={14} />
+                </button>
               </div>
-              <button
-                onClick={(e) => { e.stopPropagation(); onRemove(c.id); }}
-                className="no-drag absolute right-2.5 opacity-0 group-hover:opacity-100 rounded-lg p-1.5 text-muted hover:text-down hover:bg-white/10 transition-all"
-                title="Удалить пару"
-              >
-                <X size={15} />
-              </button>
             </div>
           );
         })}
