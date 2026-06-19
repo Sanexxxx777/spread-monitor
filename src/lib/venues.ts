@@ -19,7 +19,8 @@ export interface Venue {
   kind: "cex" | "dex";
   markets: Market[];
   symbolFor: (base: string, market: Market) => string;
-  quote: (coin: Coin, symbol: string, market: Market) => Promise<Quote | null>;
+  // hint — цена другой площадки (для DEX без контракта: выбрать пару, ближайшую по цене)
+  quote: (coin: Coin, symbol: string, market: Market, hint?: number) => Promise<Quote | null>;
 }
 
 const U = (b: string) => b.toUpperCase();
@@ -28,20 +29,34 @@ export const VENUES: Record<VenueId, Venue> = {
   dexscreener: {
     id: "dexscreener", name: "DEX (Dexscreener)", color: "#8FBC5A", kind: "dex", markets: ["spot"],
     symbolFor: (b) => b,
-    async quote(coin) {
-      if (!coin.contract) return null;
-      const d = await getJSON(`https://api.dexscreener.com/latest/dex/search/?q=${coin.contract}`);
-      const addr = coin.contract.toLowerCase();
+    async quote(coin, _s, _m, hint) {
+      const query = coin.contract || coin.base;
+      if (!query) return null;
+      const d = await getJSON(`https://api.dexscreener.com/latest/dex/search/?q=${encodeURIComponent(query)}`);
       const pairs = (d.pairs ?? []).filter((p: any) => p?.priceUsd);
-      let pool = pairs.filter((p: any) => (p.baseToken?.address ?? "").toLowerCase() === addr);
+      let pool: any[] = [];
+      if (coin.contract) {                       // контракт = точное совпадение по адресу
+        const addr = coin.contract.toLowerCase();
+        pool = pairs.filter((p: any) => (p.baseToken?.address ?? "").toLowerCase() === addr);
+      }
+      if (!pool.length && coin.base) {           // фолбэк: по тикеру
+        const sym = coin.base.toUpperCase();
+        pool = pairs.filter((p: any) => (p.baseToken?.symbol ?? "").toUpperCase() === sym);
+      }
       if (coin.chain) {
         const c = pool.filter((p: any) => p.chainId === coin.chain);
         if (c.length) pool = c;
       }
       if (!pool.length) pool = pairs;
       if (!pool.length) return null;
-      const best = pool.reduce((m: any, p: any) =>
-        (num(p.liquidity?.usd) ?? 0) > (num(m.liquidity?.usd) ?? 0) ? p : m);
+      let best: any;
+      if (!coin.contract && hint && hint > 0) {  // без контракта — ближайшая по цене к др. площадке
+        best = pool.reduce((m: any, p: any) =>
+          Math.abs((num(p.priceUsd) ?? Infinity) - hint) < Math.abs((num(m.priceUsd) ?? Infinity) - hint) ? p : m);
+      } else {
+        best = pool.reduce((m: any, p: any) =>
+          (num(p.liquidity?.usd) ?? 0) > (num(m.liquidity?.usd) ?? 0) ? p : m);
+      }
       const last = num(best.priceUsd);
       if (last === undefined) return null;
       return { last, change24: (num(best.priceChange?.h24) ?? 0) / 100, source: best.dexId, liquidity: num(best.liquidity?.usd) };

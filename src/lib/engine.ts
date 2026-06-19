@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import type { Coin, Point, Quote } from "./types";
+import type { Coin, Market, Point, Quote, VenueId } from "./types";
 import { priceForBasis, symbolForVenue, VENUES } from "./venues";
 
 export interface CoinState {
@@ -114,18 +114,34 @@ class Engine {
     const st = this.states.get(c.id);
     if (!st) return;
     try {
-      const [qa, qb] = await Promise.all([
-        VENUES[c.venueA].quote(c, symbolForVenue(c, c.venueA, c.marketA), c.marketA).catch(() => null),
-        VENUES[c.venueB].quote(c, symbolForVenue(c, c.venueB, c.marketB), c.marketB).catch(() => null),
-      ]);
+      const q = (id: VenueId, market: Market, hint?: number): Promise<Quote | null> =>
+        VENUES[id].quote(c, symbolForVenue(c, id, market), market, hint).catch(() => null);
+      const aDexNoC = VENUES[c.venueA].kind === "dex" && !c.contract;
+      const bDexNoC = VENUES[c.venueB].kind === "dex" && !c.contract;
+
+      let qa: Quote | null;
+      let qb: Quote | null;
+      if (bDexNoC && !aDexNoC) {           // B — DEX без контракта: сначала A как ценовой ориентир
+        qa = await q(c.venueA, c.marketA);
+        qb = await q(c.venueB, c.marketB, qa?.last);
+      } else if (aDexNoC && !bDexNoC) {
+        qb = await q(c.venueB, c.marketB);
+        qa = await q(c.venueA, c.marketA, qb?.last);
+      } else {
+        [qa, qb] = await Promise.all([q(c.venueA, c.marketA), q(c.venueB, c.marketB)]);
+      }
+
+      // Цены ставим НЕЗАВИСИМО: даже если одна сторона без данных, вторая видна.
       st.qa = qa ?? undefined;
       st.qb = qb ?? undefined;
-      if (qa && qb) {
-        const pa = priceForBasis(qa, c.basis, "A");
-        const pb = priceForBasis(qb, c.basis, "B");
-        const spread = pa > 0 ? ((pb - pa) / pa) * 100 : 0;
-        st.priceA = pa;
-        st.priceB = pb;
+      const pa = qa ? priceForBasis(qa, c.basis, "A") : undefined;
+      const pb = qb ? priceForBasis(qb, c.basis, "B") : undefined;
+      st.priceA = pa;
+      st.priceB = pb;
+      st.lastUpdate = Date.now();
+
+      if (pa !== undefined && pb !== undefined && pa > 0) {
+        const spread = ((pb - pa) / pa) * 100;
         st.spread = spread;
         const t = Math.floor(Date.now() / 1000);
         const last = st.history[st.history.length - 1];
@@ -133,7 +149,6 @@ class Engine {
         if (st.history.length > this.maxHistory) {
           st.history.splice(0, st.history.length - this.maxHistory);
         }
-        st.lastUpdate = Date.now();
         st.error = undefined;
         const hit = c.threshold >= 0 ? spread >= c.threshold : spread <= c.threshold;
         if (hit && !st.alerted) {
@@ -145,7 +160,8 @@ class Engine {
           st.alerted = false;
         }
       } else {
-        st.error = !qa ? `нет данных: ${c.venueA}` : `нет данных: ${c.venueB}`;
+        st.spread = undefined;
+        st.error = !qa ? `нет данных: ${c.venueA}` : !qb ? `нет данных: ${c.venueB}` : undefined;
       }
     } catch (e) {
       st.error = String(e);
