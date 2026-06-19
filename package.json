@@ -6,6 +6,7 @@
   "author": "Aleksandr NFA (@Aleksandr_NFA)",
   "homepage": "https://t.me/driptrade3",
   "repository": "https://github.com/Sanexxxx777",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "scripts": {
     "dev": "vite",

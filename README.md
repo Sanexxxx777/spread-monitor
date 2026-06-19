@@ -56,3 +56,12 @@ npm run tauri build
 **Aleksandr NFA** — [@Aleksandr_NFA](https://t.me/Aleksandr_NFA)
 - GitHub: [github.com/Sanexxxx777](https://github.com/Sanexxxx777)
 - Telegram-канал: [@driptrade3](https://t.me/driptrade3)
+
+## Лицензия
+
+Некоммерческая лицензия с обязательной атрибуцией — см. [LICENSE](LICENSE).
+- ✅ Личное и **некоммерческое** использование, копирование, доработка.
+- ⛔ **Коммерческое** использование — только с письменного разрешения автора.
+- ⛔ Распространение **без указания авторства** запрещено.
+
+© 2026 Aleksandr NFA ([@Aleksandr_NFA](https://t.me/driptrade3)).
