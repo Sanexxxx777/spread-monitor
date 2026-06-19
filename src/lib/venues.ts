@@ -69,9 +69,15 @@ export const VENUES: Record<VenueId, Venue> = {
   },
 
   aster: {
-    id: "aster", name: "Aster", color: "#7C5CFF", kind: "cex", markets: ["perp"],
+    id: "aster", name: "Aster", color: "#7C5CFF", kind: "cex", markets: ["perp", "spot"],
     symbolFor: (b) => `${U(b)}USDT`,
-    async quote(_c, s) {
+    async quote(_c, s, m) {
+      if (m === "spot") {
+        const d = await getJSON(`https://sapi.asterdex.com/api/v1/ticker/bookTicker?symbol=${s}`);
+        const bid = num(d.bidPrice), ask = num(d.askPrice);
+        if (bid === undefined || ask === undefined) return null;
+        return { last: (bid + ask) / 2, bid, ask };
+      }
       const [bt, pi] = await Promise.all([
         getJSON(`https://fapi.asterdex.com/fapi/v1/ticker/bookTicker?symbol=${s}`),
         getJSON(`https://fapi.asterdex.com/fapi/v1/premiumIndex?symbol=${s}`).catch(() => null),
