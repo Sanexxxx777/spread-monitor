@@ -117,14 +117,17 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col text-ink">
-      <div data-tauri-drag-region className="h-9 shrink-0 drag flex items-center gap-2 px-4">
-        <div className="w-[76px] shrink-0" />
-        <span className="flex-1 text-center text-[11px] font-semibold tracking-[0.22em] text-muted uppercase pointer-events-none truncate">
+      <div data-tauri-drag-region className="h-9 shrink-0 flex items-center gap-2 px-4">
+        <div data-tauri-drag-region className="w-[76px] shrink-0 self-stretch" />
+        <span
+          data-tauri-drag-region
+          className="flex-1 text-center text-[11px] font-semibold tracking-[0.22em] text-muted uppercase truncate cursor-default"
+        >
           Spread Monitor
         </span>
         <button
           onClick={cyclePalette}
-          className="magic-btn no-drag shrink-0 rounded-lg px-4 py-1 text-[11px] font-bold uppercase tracking-[0.16em]"
+          className="magic-btn shrink-0 rounded-lg px-4 py-1 text-[11px] font-bold uppercase tracking-[0.16em]"
           title={`Тема: ${PALETTES[config.settings.palette]?.label ?? ""} — клик, чтобы сменить`}
         >
           Theme
