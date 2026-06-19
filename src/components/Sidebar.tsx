@@ -6,7 +6,11 @@ import type { Coin } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function Sidebar({
-  coins, selectedId, onSelect, onRemove, onAdd,
+  coins,
+  selectedId,
+  onSelect,
+  onRemove,
+  onAdd,
 }: {
   coins: Coin[];
   selectedId: string | null;
@@ -31,15 +35,18 @@ export function Sidebar({
 
       <div className="glass rounded-2xl p-2 flex-1 overflow-y-auto flex flex-col gap-1 min-h-0">
         {coins.length === 0 && (
-          <div className="text-muted text-sm text-center px-3 py-8">
-            Пусто. Нажмите «Добавить».
-          </div>
+          <div className="text-muted text-sm text-center px-3 py-8">Пусто. Нажмите «Добавить».</div>
         )}
         {coins.map((c) => {
           const st = engine.state(c.id);
           const spread = st?.spread;
           const sel = selectedId === c.id;
-          const color = spread === undefined ? undefined : spread >= 0 ? "var(--color-up)" : "var(--color-down)";
+          const color =
+            spread === undefined
+              ? undefined
+              : spread >= 0
+                ? "var(--color-up)"
+                : "var(--color-down)";
           return (
             <div
               key={c.id}
@@ -57,17 +64,28 @@ export function Sidebar({
                   {st?.running && <span className="size-1.5 rounded-full bg-up" />}
                 </div>
                 <div className="text-[10px] text-muted truncate flex items-center gap-1.5 mt-0.5">
-                  <span className="size-2 rounded-full" style={{ background: VENUES[c.venueA].color }} />
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ background: VENUES[c.venueA].color }}
+                  />
                   {VENUES[c.venueA].name.split(" ")[0]}
                   <span className="opacity-50">⇄</span>
-                  <span className="size-2 rounded-full" style={{ background: VENUES[c.venueB].color }} />
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ background: VENUES[c.venueB].color }}
+                  />
                   {VENUES[c.venueB].name.split(" ")[0]}
                 </div>
               </div>
               <div className="flex items-center gap-0.5 shrink-0 ml-2">
-                <div className="mono text-sm font-semibold" style={{ color }}>{fmtPct(spread)}</div>
+                <div className="mono text-sm font-semibold" style={{ color }}>
+                  {fmtPct(spread)}
+                </div>
                 <button
-                  onClick={(e) => { e.stopPropagation(); onRemove(c.id); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemove(c.id);
+                  }}
                   className="no-drag -mr-1 opacity-0 group-hover:opacity-100 rounded-md p-1 text-muted hover:text-down hover:bg-white/10 transition-opacity"
                   title="Удалить пару"
                 >

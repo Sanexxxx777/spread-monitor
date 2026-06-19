@@ -6,10 +6,13 @@ import type { Coin } from "@/lib/types";
 import { Sidebar } from "@/components/Sidebar";
 import { CoinDetail } from "@/components/CoinDetail";
 import { AddCoinDialog } from "@/components/AddCoinDialog";
+import { AuthorBadge } from "@/components/AuthorBadge";
 
 function beep() {
   try {
-    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const Ctx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     const ctx = new Ctx();
     const o = ctx.createOscillator();
     const g = ctx.createGain();
@@ -31,9 +34,9 @@ function StatusBar({ coins, toast }: { coins: Coin[]; toast: string }) {
   useEngineVersion();
   const running = coins.filter((c) => engine.state(c.id)?.running).length;
   return (
-    <div className="h-8 shrink-0 px-6 flex items-center justify-between text-[11px] text-muted border-t border-white/5">
+    <div className="h-9 shrink-0 px-6 flex items-center justify-between text-[11px] text-muted border-t border-white/5">
       <span className="mono truncate">{toast || `пар: ${coins.length} · активно: ${running}`}</span>
-      <span className="mono opacity-70">Spread Monitor 2.0</span>
+      <AuthorBadge />
     </div>
   );
 }
@@ -41,7 +44,10 @@ function StatusBar({ coins, toast }: { coins: Coin[]; toast: string }) {
 export default function App() {
   const [config, setConfig] = useState<Config>(loadConfig);
   const [selectedId, setSelectedId] = useState<string | null>(config.coins[0]?.id ?? null);
-  const [dialog, setDialog] = useState<{ open: boolean; edit: Coin | null }>({ open: false, edit: null });
+  const [dialog, setDialog] = useState<{ open: boolean; edit: Coin | null }>({
+    open: false,
+    edit: null,
+  });
   const [toast, setToast] = useState("");
   const toastTimer = useRef<number | null>(null);
   useEngineVersion();
@@ -84,8 +90,14 @@ export default function App() {
   function saveCoin(coin: Coin) {
     setConfig((c) => {
       const old = c.coins.find((x) => x.id === coin.id);
-      if (old && (old.venueA !== coin.venueA || old.venueB !== coin.venueB ||
-        old.marketA !== coin.marketA || old.marketB !== coin.marketB || old.contract !== coin.contract)) {
+      if (
+        old &&
+        (old.venueA !== coin.venueA ||
+          old.venueB !== coin.venueB ||
+          old.marketA !== coin.marketA ||
+          old.marketB !== coin.marketB ||
+          old.contract !== coin.contract)
+      ) {
         engine.clear(coin.id);
       }
       const exists = !!old;

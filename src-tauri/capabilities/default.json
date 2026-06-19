@@ -6,6 +6,8 @@
   "permissions": [
     "core:default",
     "core:window:allow-set-effects",
+    "opener:default",
+    { "identifier": "opener:allow-open-url", "allow": [{ "url": "https://*" }] },
     {
       "identifier": "http:default",
       "allow": [

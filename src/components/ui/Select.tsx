@@ -9,7 +9,12 @@ export interface Option {
 }
 
 export function Select({
-  value, onChange, options, className, ariaLabel, bare,
+  value,
+  onChange,
+  options,
+  className,
+  ariaLabel,
+  bare,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -34,7 +39,10 @@ export function Select({
       >
         <span className="flex items-center gap-2 truncate">
           {current?.color && (
-            <span className="size-2.5 rounded-full shrink-0" style={{ background: current.color }} />
+            <span
+              className="size-2.5 rounded-full shrink-0"
+              style={{ background: current.color }}
+            />
           )}
           <RS.Value />
         </span>
@@ -59,7 +67,10 @@ export function Select({
                 )}
               >
                 {o.color && (
-                  <span className="size-2.5 rounded-full shrink-0" style={{ background: o.color }} />
+                  <span
+                    className="size-2.5 rounded-full shrink-0"
+                    style={{ background: o.color }}
+                  />
                 )}
                 <RS.ItemText>{o.label}</RS.ItemText>
                 <RS.ItemIndicator className="ml-auto">

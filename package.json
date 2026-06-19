@@ -1,7 +1,11 @@
 {
   "name": "spread-monitor",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.0",
+  "description": "Нативный монитор спреда между любыми двумя площадками (DEX + 9 CEX-фьючерсов)",
+  "author": "Aleksandr NFA (@Aleksandr_NFA)",
+  "homepage": "https://t.me/driptrade3",
+  "repository": "https://github.com/Sanexxxx777",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,6 +23,7 @@
     "@radix-ui/react-tooltip": "^1.2.10",
     "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/plugin-http": "^2.5.9",
+    "@tauri-apps/plugin-opener": "^2.5.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lightweight-charts": "^5.2.0",
@@ -40,6 +45,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
     "playwright": "^1.61.0",
+    "prettier": "^3.8.4",
     "tailwindcss": "^4.3.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",

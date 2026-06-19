@@ -8,8 +8,8 @@ KuCoin, Hyperliquid, Aster, MEXC, Gate.
 динамику спреда между ними: цены, спред по `last` или по стакану, funding,
 24h-изменение, реал-тайм графики.
 
-Премиальный интерфейс с настоящим **liquid glass** (нативный vibrancy macOS) в
-стиле дизайн-системы gamma. Преемник Qt-версии (`../dex-spread-monitor`).
+Интерфейс на **liquid glass** — нативный vibrancy macOS, тёплое золото
+дизайн-системы gamma. Преемник Qt-версии (`../dex-spread-monitor`).
 
 ## Возможности
 - **Пара площадок A ⇄ B** для каждой монеты, переключение «на лету».
@@ -50,3 +50,9 @@ npm run tauri build
 | Dexscreener (DEX) | контракт + сеть | priceUsd |
 
 Графики lightweight-charts © TradingView (Apache-2.0).
+
+## Автор
+
+**Aleksandr NFA** — [@Aleksandr_NFA](https://t.me/Aleksandr_NFA)
+- GitHub: [github.com/Sanexxxx777](https://github.com/Sanexxxx777)
+- Telegram-канал: [@driptrade3](https://t.me/driptrade3)

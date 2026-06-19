@@ -1,5 +1,9 @@
 export function Kpi({
-  label, value, sub, accent, highlight,
+  label,
+  value,
+  sub,
+  accent,
+  highlight,
 }: {
   label: string;
   value: string;

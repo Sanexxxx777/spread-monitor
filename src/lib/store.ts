@@ -8,7 +8,12 @@ export interface Config {
 }
 
 const SETTINGS_V = 3;
-export const DEFAULT_SETTINGS: Settings = { maxHistory: 3000, autoStart: true, palette: "setup", v: SETTINGS_V };
+export const DEFAULT_SETTINGS: Settings = {
+  maxHistory: 3000,
+  autoStart: true,
+  palette: "setup",
+  v: SETTINGS_V,
+};
 
 export function uid(): string {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -18,15 +23,32 @@ export function defaultConfig(): Config {
   return {
     coins: [
       {
-        id: uid(), base: "PEPE", label: "PEPE",
-        contract: "0x6982508145454ce325ddbe47a25d4ec3d2311933", chain: "ethereum",
-        venueA: "binance", venueB: "gate", marketA: "perp", marketB: "perp",
-        threshold: 1, interval: 5, basis: "last", sound: true,
+        id: uid(),
+        base: "PEPE",
+        label: "PEPE",
+        contract: "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+        chain: "ethereum",
+        venueA: "binance",
+        venueB: "gate",
+        marketA: "perp",
+        marketB: "perp",
+        threshold: 1,
+        interval: 5,
+        basis: "last",
+        sound: true,
       },
       {
-        id: uid(), base: "BTC", label: "BTC",
-        venueA: "binance", venueB: "hyperliquid", marketA: "perp", marketB: "perp",
-        threshold: 0.1, interval: 5, basis: "last", sound: false,
+        id: uid(),
+        base: "BTC",
+        label: "BTC",
+        venueA: "binance",
+        venueB: "hyperliquid",
+        marketA: "perp",
+        marketB: "perp",
+        threshold: 0.1,
+        interval: 5,
+        basis: "last",
+        sound: false,
       },
     ],
     settings: { ...DEFAULT_SETTINGS },

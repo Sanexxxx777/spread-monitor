@@ -1,36 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-  --color-base: #16130F;
-  --color-panel: #211C17;
-  --color-panel2: #2A241E;
-  --color-line: #3A2F26;
-  --color-ink: #F2D4BA;
-  --color-muted: #BDA189;
-  --color-gold: #D4915C;
-  --color-gold2: #BE6841;
-  --color-up: #8FBC5A;
-  --color-down: #D86A4A;
+  --color-base: #16130f;
+  --color-panel: #211c17;
+  --color-panel2: #2a241e;
+  --color-line: #3a2f26;
+  --color-ink: #f2d4ba;
+  --color-muted: #bda189;
+  --color-gold: #d4915c;
+  --color-gold2: #be6841;
+  --color-up: #8fbc5a;
+  --color-down: #d86a4a;
   --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, monospace;
 }
 
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
 /* Дефолты стекла/графиков — переопределяются палитрой через applyPalette() */
 :root {
-  --app-bg: radial-gradient(1200px 800px at 15% 0%, #16203A, #0A0E1A 60%);
+  --app-bg: radial-gradient(1200px 800px at 15% 0%, #16203a, #0a0e1a 60%);
   --glass-bg: rgba(22, 30, 52, 0.55);
   --glass-bg-strong: rgba(16, 22, 40, 0.84);
-  --glass-border: rgba(255, 255, 255, 0.10);
-  --glass-border-hi: rgba(255, 255, 255, 0.20);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-hi: rgba(255, 255, 255, 0.2);
   --glass-shadow: 0 12px 34px rgba(0, 0, 0, 0.42);
-  --chart-text: #8A94A8;
+  --chart-text: #8a94a8;
   --chart-grid: rgba(255, 255, 255, 0.06);
 }
 
 /* Палитра задаёт фон окна → цвет диктуем мы (не системный материал) */
-#root { background: var(--app-bg); }
+#root {
+  background: var(--app-bg);
+}
 
 body {
   /* прозрачно: сквозь окно виден нативный vibrancy (Tauri windowEffects) */
@@ -57,7 +67,9 @@ input[type="number"]::-webkit-outer-spin-button {
   backdrop-filter: blur(22px) saturate(150%);
   -webkit-backdrop-filter: blur(22px) saturate(150%);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 .glass-strong {
   background: var(--glass-bg-strong);
@@ -66,60 +78,127 @@ input[type="number"]::-webkit-outer-spin-button {
   border: 1px solid var(--glass-border);
 }
 
-.drag { -webkit-app-region: drag; }
-.no-drag { -webkit-app-region: no-drag; }
+.drag {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}
 
 /* ---------- Плавность / анимации ---------- */
 /* мягкий кроссфейд при смене палитры + переходы поверхностей */
 .glass {
-  transition: background-color 0.4s ease, border-color 0.4s ease,
-              box-shadow 0.25s ease, transform 0.25s cubic-bezier(0.22, 0.7, 0.2, 1);
+  transition:
+    background-color 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s cubic-bezier(0.22, 0.7, 0.2, 1);
 }
-body, #root { transition: background-color 0.45s ease; }
+body,
+#root {
+  transition: background-color 0.45s ease;
+}
 button {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
-              transform 0.12s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.12s ease,
+    box-shadow 0.2s ease;
 }
-button:active { transform: scale(0.97); }
+button:active {
+  transform: scale(0.97);
+}
 
 /* приподнятие карточек на ховере */
 .lift:hover {
   transform: translateY(-2px);
-  box-shadow: var(--glass-shadow), 0 0 0 1px var(--glass-border-hi);
+  box-shadow:
+    var(--glass-shadow),
+    0 0 0 1px var(--glass-border-hi);
 }
 
 /* появление панелей */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.anim-in { animation: fadeUp 0.45s cubic-bezier(0.22, 0.7, 0.2, 1) both; }
+.anim-in {
+  animation: fadeUp 0.45s cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
 
 /* пульс-свечение при пробое порога */
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: var(--glass-shadow), 0 0 0 1px var(--color-down); }
-  50% { box-shadow: var(--glass-shadow), 0 0 24px 2px color-mix(in srgb, var(--color-down) 55%, transparent); }
+  0%,
+  100% {
+    box-shadow:
+      var(--glass-shadow),
+      0 0 0 1px var(--color-down);
+  }
+  50% {
+    box-shadow:
+      var(--glass-shadow),
+      0 0 24px 2px color-mix(in srgb, var(--color-down) 55%, transparent);
+  }
 }
-.alert-glow { animation: pulseGlow 1.5s ease-in-out infinite; border-color: var(--color-down) !important; }
+.alert-glow {
+  animation: pulseGlow 1.5s ease-in-out infinite;
+  border-color: var(--color-down) !important;
+}
 
 /* всплытие выпадашек/диалогов */
 @keyframes popIn {
-  from { opacity: 0; transform: scale(0.96) translateY(-4px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
-.pop-anim { transform-origin: top center; }
-.pop-anim[data-state="open"] { animation: popIn 0.16s ease-out; }
+.pop-anim {
+  transform-origin: top center;
+}
+.pop-anim[data-state="open"] {
+  animation: popIn 0.16s ease-out;
+}
 
-@keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
-.overlay-anim[data-state="open"] { animation: overlayIn 0.2s ease-out; }
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.overlay-anim[data-state="open"] {
+  animation: overlayIn 0.2s ease-out;
+}
 
 /* диалог: анимируем, сохраняя центрирование translate(-50%,-50%) */
 @keyframes dialogIn {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.96); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
-.dialog-anim { transform: translate(-50%, -50%); }
-.dialog-anim[data-state="open"] { animation: dialogIn 0.18s ease-out both; }
+.dialog-anim {
+  transform: translate(-50%, -50%);
+}
+.dialog-anim[data-state="open"] {
+  animation: dialogIn 0.18s ease-out both;
+}
 
 /* «магическая» кнопка темы: золотой градиент-перелив + бегущий блик + свечение */
 .magic-btn {
@@ -127,43 +206,85 @@ button:active { transform: scale(0.97); }
   overflow: hidden;
   color: #1a140e;
   border: 1px solid var(--glass-border-hi);
-  background: linear-gradient(115deg,
-    var(--color-gold2) 0%, var(--color-gold) 42%, #fff4e0 52%,
-    var(--color-gold) 62%, var(--color-gold2) 100%);
+  background: linear-gradient(
+    115deg,
+    var(--color-gold2) 0%,
+    var(--color-gold) 42%,
+    #fff4e0 52%,
+    var(--color-gold) 62%,
+    var(--color-gold2) 100%
+  );
   background-size: 230% 100%;
   animation: magicShift 7s linear infinite;
   box-shadow: 0 0 14px -2px color-mix(in srgb, var(--color-gold) 50%, transparent);
 }
 @keyframes magicShift {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 230% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 230% 50%;
+  }
 }
 .magic-btn::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.6) 50%, transparent 65%);
+  background: linear-gradient(
+    110deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.6) 50%,
+    transparent 65%
+  );
   transform: translateX(-130%);
   animation: magicSheen 4.5s ease-in-out infinite;
 }
 @keyframes magicSheen {
-  0%, 55% { transform: translateX(-130%); }
-  80%, 100% { transform: translateX(130%); }
+  0%,
+  55% {
+    transform: translateX(-130%);
+  }
+  80%,
+  100% {
+    transform: translateX(130%);
+  }
 }
 .magic-btn:hover {
   box-shadow: 0 0 22px 1px color-mix(in srgb, var(--color-gold) 60%, transparent);
   filter: brightness(1.07);
 }
-.magic-btn:active { transform: scale(0.96); }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+.magic-btn:active {
+  transform: scale(0.96);
 }
 
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 8px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
-::-webkit-scrollbar-track { background: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 
-.mono { font-family: var(--font-mono); font-feature-settings: "tnum"; }
-.font-display { font-family: "Playfair Display", Georgia, "Times New Roman", serif; }
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum";
+}
+.font-display {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}

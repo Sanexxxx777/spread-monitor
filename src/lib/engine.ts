@@ -121,7 +121,8 @@ class Engine {
 
       let qa: Quote | null;
       let qb: Quote | null;
-      if (bDexNoC && !aDexNoC) {           // B — DEX без контракта: сначала A как ценовой ориентир
+      if (bDexNoC && !aDexNoC) {
+        // B — DEX без контракта: сначала A как ценовой ориентир
         qa = await q(c.venueA, c.marketA);
         qb = await q(c.venueB, c.marketB, qa?.last);
       } else if (aDexNoC && !bDexNoC) {
@@ -154,7 +155,10 @@ class Engine {
         if (hit && !st.alerted) {
           st.alerted = true;
           if (c.sound) {
-            this.onAlert?.(c, `${c.label}: спред ${spread.toFixed(2)}% пересёк порог ${c.threshold}%`);
+            this.onAlert?.(
+              c,
+              `${c.label}: спред ${spread.toFixed(2)}% пересёк порог ${c.threshold}%`,
+            );
           }
         } else if (!hit) {
           st.alerted = false;

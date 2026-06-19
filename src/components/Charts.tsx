@@ -1,7 +1,13 @@
 import { useEffect, useRef } from "react";
 import {
-  createChart, LineSeries, LineStyle, ColorType,
-  type IChartApi, type ISeriesApi, type IPriceLine, type UTCTimestamp,
+  createChart,
+  LineSeries,
+  LineStyle,
+  ColorType,
+  type IChartApi,
+  type ISeriesApi,
+  type IPriceLine,
+  type UTCTimestamp,
 } from "lightweight-charts";
 import type { Point } from "@/lib/types";
 
@@ -41,7 +47,10 @@ function baseOptions() {
 }
 
 export function PriceChart({
-  history, version, colorA, colorB,
+  history,
+  version,
+  colorA,
+  colorB,
 }: {
   history: Point[];
   version: number;
@@ -55,8 +64,20 @@ export function PriceChart({
   useEffect(() => {
     if (!ref.current) return;
     const c: IChartApi = createChart(ref.current, baseOptions());
-    sa.current = c.addSeries(LineSeries, { color: colorA, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, priceFormat: PRICE_FORMAT });
-    sb.current = c.addSeries(LineSeries, { color: colorB, lineWidth: 2, priceLineVisible: false, lastValueVisible: true, priceFormat: PRICE_FORMAT });
+    sa.current = c.addSeries(LineSeries, {
+      color: colorA,
+      lineWidth: 2,
+      priceLineVisible: false,
+      lastValueVisible: true,
+      priceFormat: PRICE_FORMAT,
+    });
+    sb.current = c.addSeries(LineSeries, {
+      color: colorB,
+      lineWidth: 2,
+      priceLineVisible: false,
+      lastValueVisible: true,
+      priceFormat: PRICE_FORMAT,
+    });
     return () => c.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -75,7 +96,9 @@ export function PriceChart({
 }
 
 export function SpreadChart({
-  history, version, threshold,
+  history,
+  version,
+  threshold,
 }: {
   history: Point[];
   version: number;
@@ -89,11 +112,20 @@ export function SpreadChart({
     if (!ref.current) return;
     const c: IChartApi = createChart(ref.current, baseOptions());
     const line = c.addSeries(LineSeries, {
-      color: cssVar("--color-gold", "#5B8CFF"), lineWidth: 2,
-      priceLineVisible: false, lastValueVisible: true,
+      color: cssVar("--color-gold", "#5B8CFF"),
+      lineWidth: 2,
+      priceLineVisible: false,
+      lastValueVisible: true,
     });
     s.current = line;
-    line.createPriceLine({ price: 0, color: cssVar("--chart-text", "#8893A8"), lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: false, title: "" });
+    line.createPriceLine({
+      price: 0,
+      color: cssVar("--chart-text", "#8893A8"),
+      lineWidth: 1,
+      lineStyle: LineStyle.Dashed,
+      axisLabelVisible: false,
+      title: "",
+    });
     return () => c.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -102,8 +134,12 @@ export function SpreadChart({
     if (!s.current) return;
     if (thr.current) s.current.removePriceLine(thr.current);
     thr.current = s.current.createPriceLine({
-      price: threshold, color: cssVar("--color-down", "#FB6F70"), lineWidth: 1,
-      lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: "порог",
+      price: threshold,
+      color: cssVar("--color-down", "#FB6F70"),
+      lineWidth: 1,
+      lineStyle: LineStyle.Dashed,
+      axisLabelVisible: true,
+      title: "порог",
     });
   }, [threshold]);
 
