@@ -78,6 +78,8 @@ export const VENUES: Record<VenueId, Venue> = {
         change24: (num(best.priceChange?.h24) ?? 0) / 100,
         source: best.dexId,
         liquidity: num(best.liquidity?.usd),
+        volume: num(best.volume?.h24),
+        marketCap: num(best.marketCap) ?? num(best.fdv),
       };
     },
   },

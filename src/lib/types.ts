@@ -22,6 +22,8 @@ export interface Quote {
   mark?: number;
   source?: string; // напр. имя DEX-пула
   liquidity?: number; // только DEX
+  volume?: number; // объём 24ч в USD (только DEX)
+  marketCap?: number; // капитализация в USD (только DEX)
 }
 
 export interface Coin {

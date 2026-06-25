@@ -1,6 +1,6 @@
 import { Plus, X } from "lucide-react";
 import { engine, useEngineVersion } from "@/lib/engine";
-import { fmtPct } from "@/lib/format";
+import { fmtMoney, fmtPct } from "@/lib/format";
 import { VENUES } from "@/lib/venues";
 import type { Coin } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -41,6 +41,21 @@ export function Sidebar({
           const st = engine.state(c.id);
           const spread = st?.spread;
           const sel = selectedId === c.id;
+          // объём + капитализация тянем со стороны, которая DEX (Dexscreener)
+          const dexQ =
+            VENUES[c.venueA].kind === "dex"
+              ? st?.qa
+              : VENUES[c.venueB].kind === "dex"
+                ? st?.qb
+                : undefined;
+          const dexInfo = dexQ
+            ? [
+                dexQ.volume !== undefined ? `Vol ${fmtMoney(dexQ.volume)}` : null,
+                dexQ.marketCap !== undefined ? `MC ${fmtMoney(dexQ.marketCap)}` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")
+            : "";
           const color =
             spread === undefined
               ? undefined
@@ -76,6 +91,11 @@ export function Sidebar({
                   />
                   {VENUES[c.venueB].name.split(" ")[0]}
                 </div>
+                {dexInfo && (
+                  <div className="text-[10px] text-muted/60 truncate mono mt-0.5">
+                    {dexInfo} <span className="opacity-60">(Dex)</span>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-0.5 shrink-0 ml-2">
                 <div className="mono text-sm font-semibold" style={{ color }}>

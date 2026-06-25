@@ -93,7 +93,7 @@ export function AddCoinDialog({
   const [basis, setBasis] = useState<"last" | "exec">(initial?.basis ?? "last");
   const [sound, setSound] = useState(initial?.sound ?? true);
 
-  const dex = venueA === "dexscreener" || venueB === "dexscreener";
+  const dex = VENUES[venueA].kind === "dex" || VENUES[venueB].kind === "dex";
   const valid = base.trim() !== "" && (!dex || contract.trim() !== "");
 
   function submit() {
@@ -140,14 +140,25 @@ export function AddCoinDialog({
                   placeholder="BTC, PEPE…"
                 />
               </Field>
-              <Field label="Имя (опц.)">
-                <input
-                  className={inputCls}
-                  value={label}
-                  onChange={(e) => setLabel(e.target.value)}
-                  placeholder="как в списке"
-                />
-              </Field>
+              {dex ? (
+                <Field label="Контракт токена (DEX)">
+                  <input
+                    className={inputCls}
+                    value={contract}
+                    onChange={(e) => setContract(e.target.value)}
+                    placeholder="0x… / адрес"
+                  />
+                </Field>
+              ) : (
+                <Field label="Имя (опц.)">
+                  <input
+                    className={inputCls}
+                    value={label}
+                    onChange={(e) => setLabel(e.target.value)}
+                    placeholder="как в списке"
+                  />
+                </Field>
+              )}
             </div>
 
             <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2">
@@ -194,17 +205,17 @@ export function AddCoinDialog({
             </div>
 
             {dex && (
-              <div className="grid grid-cols-[1fr_140px] gap-3">
-                <Field label="Контракт токена (DEX)">
+              <div className="grid grid-cols-[200px_1fr] gap-3">
+                <Field label="Сеть DEX">
+                  <Select value={chain} onChange={setChain} options={chainOptions} />
+                </Field>
+                <Field label="Имя (опц.)">
                   <input
                     className={inputCls}
-                    value={contract}
-                    onChange={(e) => setContract(e.target.value)}
-                    placeholder="0x…"
+                    value={label}
+                    onChange={(e) => setLabel(e.target.value)}
+                    placeholder="как в списке"
                   />
-                </Field>
-                <Field label="Сеть">
-                  <Select value={chain} onChange={setChain} options={chainOptions} />
                 </Field>
               </div>
             )}

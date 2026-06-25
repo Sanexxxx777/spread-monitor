@@ -165,6 +165,7 @@ export default function App() {
       <StatusBar coins={config.coins} toast={toast} />
 
       <AddCoinDialog
+        key={dialog.open ? (dialog.edit?.id ?? "new") : "closed"}
         open={dialog.open}
         initial={dialog.edit}
         onClose={() => setDialog({ open: false, edit: null })}
