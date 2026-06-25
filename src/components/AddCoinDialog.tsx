@@ -8,18 +8,6 @@ import type { Coin, Market, VenueId } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const venueOptions = VENUE_LIST.map((v) => ({ value: v.id, label: v.name, color: v.color }));
-const chainOptions = [
-  "ethereum",
-  "bsc",
-  "solana",
-  "base",
-  "arbitrum",
-  "polygon",
-  "avalanche",
-  "optimism",
-  "sui",
-  "tron",
-].map((c) => ({ value: c, label: c }));
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -87,8 +75,7 @@ export function AddCoinDialog({
   const [marketA, setMarketA] = useState<Market>(initial?.marketA ?? "perp");
   const [marketB, setMarketB] = useState<Market>(initial?.marketB ?? "perp");
   const [contract, setContract] = useState(initial?.contract ?? "");
-  const [chain, setChain] = useState(initial?.chain ?? "ethereum");
-  const [threshold, setThreshold] = useState(String(initial?.threshold ?? 1));
+  const [threshold, setThreshold] = useState(String(initial?.threshold ?? 5));
   const [interval, setIntervalS] = useState(String(initial?.interval ?? 5));
   const [basis, setBasis] = useState<"last" | "exec">(initial?.basis ?? "last");
   const [sound, setSound] = useState(initial?.sound ?? true);
@@ -104,7 +91,6 @@ export function AddCoinDialog({
       base: b,
       label: label.trim() || b,
       contract: dex ? contract.trim() : undefined,
-      chain: dex ? chain : undefined,
       venueA,
       venueB,
       marketA: clampMarket(venueA, marketA),
@@ -205,19 +191,14 @@ export function AddCoinDialog({
             </div>
 
             {dex && (
-              <div className="grid grid-cols-[200px_1fr] gap-3">
-                <Field label="Сеть DEX">
-                  <Select value={chain} onChange={setChain} options={chainOptions} />
-                </Field>
-                <Field label="Имя (опц.)">
-                  <input
-                    className={inputCls}
-                    value={label}
-                    onChange={(e) => setLabel(e.target.value)}
-                    placeholder="как в списке"
-                  />
-                </Field>
-              </div>
+              <Field label="Имя (опц.)">
+                <input
+                  className={inputCls}
+                  value={label}
+                  onChange={(e) => setLabel(e.target.value)}
+                  placeholder="как в списке"
+                />
+              </Field>
             )}
 
             <div className="grid grid-cols-3 gap-3">

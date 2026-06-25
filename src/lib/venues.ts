@@ -51,10 +51,7 @@ export const VENUES: Record<VenueId, Venue> = {
         const sym = coin.base.toUpperCase();
         pool = pairs.filter((p: any) => (p.baseToken?.symbol ?? "").toUpperCase() === sym);
       }
-      if (coin.chain) {
-        const c = pool.filter((p: any) => p.chainId === coin.chain);
-        if (c.length) pool = c;
-      }
+      // сеть не фиксируется вручную — определяется автоматически по лучшей паре ниже
       if (!pool.length) pool = pairs;
       if (!pool.length) return null;
       let best: any;

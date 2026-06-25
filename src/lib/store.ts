@@ -27,7 +27,6 @@ export function defaultConfig(): Config {
         base: "PEPE",
         label: "PEPE",
         contract: "0x6982508145454ce325ddbe47a25d4ec3d2311933",
-        chain: "ethereum",
         venueA: "binance",
         venueB: "gate",
         marketA: "perp",

@@ -230,42 +230,70 @@ export function CoinDetail({
       </div>
 
       {/* Графики */}
-      <div
-        className="anim-in glass rounded-2xl p-4 flex flex-col gap-3 flex-1 min-h-0"
-        style={{ animationDelay: "120ms" }}
-      >
-        <div className="flex items-center gap-4 text-[11px] text-muted px-1">
-          <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full" style={{ background: va.color }} />
-            {va.name}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="size-2.5 rounded-full" style={{ background: vb.color }} />
-            {vb.name}
-          </span>
-          <span className="ml-auto">
-            {st?.lastUpdate ? new Date(st.lastUpdate).toLocaleTimeString() : "—"} ·{" "}
-            {st?.history.length ?? 0} точек
-          </span>
-        </div>
-        <div className="flex-[3] min-h-[180px]">
-          <PriceChart
-            key={`p-${paletteKey}`}
-            history={st?.history ?? []}
-            version={version}
-            colorA={va.color}
-            colorB={vb.color}
-          />
-        </div>
-        <div className="h-px bg-white/5" />
-        <div className="flex-[2] min-h-[120px]">
-          <SpreadChart
-            key={`s-${paletteKey}`}
-            history={st?.history ?? []}
-            version={version}
-            threshold={coin.threshold}
-          />
-        </div>
+      <div className="anim-in flex flex-col gap-4 flex-1 min-h-0" style={{ animationDelay: "120ms" }}>
+        {/* График цен */}
+        <section className="glass rounded-2xl border border-white/10 p-4 flex flex-col gap-2 flex-[3] min-h-[200px]">
+          <header className="flex items-end gap-3 px-1 flex-wrap">
+            <div className="flex flex-col">
+              <h3 className="font-display text-sm font-semibold text-ink leading-tight">
+                Цены площадок
+              </h3>
+              <span className="text-[10px] text-muted">цена каждой площадки во времени</span>
+            </div>
+            <div className="ml-auto flex items-center gap-4 text-[11px] text-muted">
+              <span className="flex items-center gap-1.5">
+                <span className="size-2.5 rounded-full" style={{ background: va.color }} />
+                {va.name}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="size-2.5 rounded-full" style={{ background: vb.color }} />
+                {vb.name}
+              </span>
+              <span className="text-muted/70">
+                {st?.lastUpdate ? new Date(st.lastUpdate).toLocaleTimeString() : "—"} ·{" "}
+                {st?.history.length ?? 0} точек
+              </span>
+            </div>
+          </header>
+          <div className="flex-1 min-h-0">
+            <PriceChart
+              key={`p-${paletteKey}`}
+              history={st?.history ?? []}
+              version={version}
+              colorA={va.color}
+              colorB={vb.color}
+            />
+          </div>
+        </section>
+
+        {/* График спреда */}
+        <section className="glass rounded-2xl border border-white/10 p-4 flex flex-col gap-2 flex-[2] min-h-[140px]">
+          <header className="flex items-end gap-3 px-1 flex-wrap">
+            <div className="flex flex-col">
+              <h3 className="font-display text-sm font-semibold text-ink leading-tight">
+                Спред B / A, %
+              </h3>
+              <span className="text-[10px] text-muted">
+                насколько {vb.name} дороже/дешевле {va.name}
+              </span>
+            </div>
+            <span className="ml-auto flex items-center gap-1.5 text-[11px] text-muted">
+              <span
+                className="inline-block w-3 border-t border-dashed"
+                style={{ borderColor: "var(--color-down)" }}
+              />
+              порог {coin.threshold}%
+            </span>
+          </header>
+          <div className="flex-1 min-h-0">
+            <SpreadChart
+              key={`s-${paletteKey}`}
+              history={st?.history ?? []}
+              version={version}
+              threshold={coin.threshold}
+            />
+          </div>
+        </section>
       </div>
 
       {/* Управление */}

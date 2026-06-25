@@ -6,7 +6,10 @@ Vite 8 + Tailwind v4 + lightweight-charts. Преемник Qt-версии `~/P
 
 **Публичный** репо: github.com/Sanexxxx777/spread-monitor (origin=ssh, branch `main`).
 Приложение: `/Applications/Spread Monitor.app`. Лицензия: некоммерческая + обязательная
-атрибуция (`LICENSE`, © @Aleksandr_NFA). Деплой = `cp -R` свежий `.app` в `/Applications` + `killall Dock`.
+атрибуция (`LICENSE`, © @Aleksandr_NFA).
+
+**Деплой (.app в /Applications):** `trash` старую → `ditto`/`cp -R` свежую из `target/.../macos/` в `/Applications/` → **удалить билд-артефакт из `target/`** (`trash` его) → `lsregister -f "/Applications/Spread Monitor.app"` + `killall Dock`.
+⚠️ **Дубль в Launchpad — НЕ от Spotlight.** Корень: собранный `.app` остаётся в `target/` и регистрируется в **LaunchServices** (при запуске оттуда ИЛИ при `lsregister -r`, который рекурсивно сканит `~`), → Launchpad показывает ДВЕ иконки. `.metadata_never_index` влияет ТОЛЬКО на Spotlight (`mdfind`), Launchpad берёт из LaunchServices — НЕ помогает. Лечение: (1) не держать `.app` в `target/` после установки; (2) НЕ запускать `lsregister -r` пока артефакт лежит в `target/` — звать `lsregister -f <одна нужная>`. Проверка «сколько реально видит Launchpad» = `find /Applications ~/Applications -iname "*spread monitor*.app"` (а НЕ `lsregister -dump`, он показывает stale + корзину).
 
 ## Run / Build
 - Dev: `npm run tauri dev`. Сборка: `npm run tauri build` → `src-tauri/target/release/bundle/macos/Spread Monitor.app` (~6 МБ).
@@ -24,8 +27,9 @@ Vite 8 + Tailwind v4 + lightweight-charts. Преемник Qt-версии `~/P
 - **Перетаскивание окна: `getCurrentWindow().startDragging()` по `onMouseDown`** на шапке (App.tsx), НЕ `data-tauri-drag-region` — он при `transparent:true`+overlay-titlebar НЕ срабатывает. CSS `-webkit-app-region:drag/no-drag` в WKWebView вообще no-op. Нужно разрешение `core:window:allow-start-dragging`. Кнопка Theme гасит propagation.
 - **Спот/фьючерс — на коине поля `marketA`/`marketB`** (тип `Market`). `VENUES[id].markets` — что поддерживается; `clampMarket` приводит рынок под возможности (DEX=spot, Aster=spot+perp, Hyperliquid=perp). Адаптер `quote(coin, symbol, market, hint?)`. Funding/время списания — только для перпов (`fundingTime` ms; у Binance/Aster/OKX/KuCoin/MEXC доп. запрос premiumIndex/funding-rate/contracts).
 - **DEX без контракта = поиск по ТИКЕРУ + выбор пары ближайшей по цене к другой площадке** (`hint` из движка). Иначе «самый ликвидный» берёт ЧУЖОЙ одноимённый токен (ESPORTS: base $0.072 vs BSC $0.047 → фейк-спред). Контракт = точное совпадение по адресу (приоритет). Единственная DEX-площадка = `dexscreener`.
+- **Сеть DEX определяется АВТОМАТИЧЕСКИ** (25.06): ручного выбора сети НЕТ — `dexscreener.quote` фильтрует пары по адресу контракта и берёт лучшую по ликвидности, её `chainId` = сеть. Поле «Сеть DEX» и тип `Coin.chain` УБРАНЫ. Краевой случай (один адрес на нескольких EVM-сетях) → выбирается сеть с макс. ликвидностью.
 - **Объём + капитализация в сайдбаре** (`Quote.volume`/`marketCap`): тянутся со стороны, где `kind==="dex"` (Dexscreener: `volume.h24`, `marketCap`||`fdv`). Серой строкой `Vol … · MC … (Dex)` под токеном, обновляется через `useEngineVersion`. Только DEX (CEX не отдаёт эти поля).
-- **DEX-форма (`AddCoinDialog`): для DEX поле «Имя» в 1-й строке заменяется на «Контракт токена»** (обязателен), сеть+имя уходят в блок ниже. `dex` = `VENUES[venueA/B].kind==="dex"` (НЕ хардкод имени). Работает и в ADD, и в EDIT.
+- **DEX-форма (`AddCoinDialog`): для DEX поле «Имя» в 1-й строке заменяется на «Контракт токена»** (обязателен), «Имя (опц.)» уходит строкой ниже. `dex` = `VENUES[venueA/B].kind==="dex"` (НЕ хардкод имени). Работает и в ADD, и в EDIT. Поля выбора сети нет — сеть авто (см. выше).
 - **`<AddCoinDialog>` ДОЛЖЕН иметь `key={dialog.open ? (dialog.edit?.id ?? "new") : "closed"}`** (App.tsx): компонент всегда смонтирован, `useState(initial?.…)` инициализируется ОДИН раз → без `key` «Изменить» показывало бы дефолты (binance/gate, «Имя») вместо значений монеты, а повторное «Добавить» тянуло stale-ввод. `key` форсит ремоунт на каждое открытие. (Был баг, исправлен 25.06.)
 - **Движок ставит цены сторон НЕЗАВИСИМО**: даже если одна без данных, вторая видна; спред — только когда обе. (Раньше priceA/B ставились лишь при обеих → пустое «—» при молчащей стороне.)
 - **Внешние ссылки — `@tauri-apps/plugin-opener` `openUrl()`** (значок автора в статус-баре). Разрешение `opener:default`+`opener:allow-open-url`.

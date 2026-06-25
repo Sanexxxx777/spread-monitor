@@ -30,8 +30,7 @@ export interface Coin {
   id: string;
   base: string; // BTC, PEPE, ...
   label: string; // отображаемое имя
-  contract?: string; // адрес токена для DEX (Dexscreener)
-  chain?: string; // сеть DEX
+  contract?: string; // адрес токена для DEX (Dexscreener); сеть определяется автоматически
   venueA: VenueId;
   venueB: VenueId;
   marketA: Market; // спот или фьючерс для площадки A
