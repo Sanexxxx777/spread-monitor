@@ -7,9 +7,23 @@ function num(v: unknown): number | undefined {
 }
 
 async function getJSON(url: string, init?: RequestInit): Promise<any> {
-  const r = await fetch(url, { method: "GET", ...init });
+  const r = await fetch(url, { method: "GET", signal: AbortSignal.timeout(8000), ...init });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
+}
+
+const jsonCache = new Map<string, { t: number; p: Promise<unknown> }>();
+
+function cachedJSON(url: string, ttlMs: number): Promise<unknown> {
+  const now = Date.now();
+  const hit = jsonCache.get(url);
+  if (hit && now - hit.t < ttlMs) return hit.p;
+  const p = getJSON(url).catch((e) => {
+    jsonCache.delete(url);
+    throw e;
+  });
+  jsonCache.set(url, { t: now, p });
+  return p;
 }
 
 export interface Venue {
@@ -98,7 +112,12 @@ export const VENUES: Record<VenueId, Venue> = {
       }
       const [bt, pi] = await Promise.all([
         getJSON(`https://fapi.binance.com/fapi/v1/ticker/bookTicker?symbol=${s}`),
-        getJSON(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${s}`).catch(() => null),
+        (
+          cachedJSON(
+            `https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${s}`,
+            300_000,
+          ) as Promise<any>
+        ).catch(() => null),
       ]);
       const bid = num(bt.bidPrice),
         ask = num(bt.askPrice);
@@ -131,7 +150,12 @@ export const VENUES: Record<VenueId, Venue> = {
       }
       const [bt, pi] = await Promise.all([
         getJSON(`https://fapi.asterdex.com/fapi/v1/ticker/bookTicker?symbol=${s}`),
-        getJSON(`https://fapi.asterdex.com/fapi/v1/premiumIndex?symbol=${s}`).catch(() => null),
+        (
+          cachedJSON(
+            `https://fapi.asterdex.com/fapi/v1/premiumIndex?symbol=${s}`,
+            300_000,
+          ) as Promise<any>
+        ).catch(() => null),
       ]);
       const bid = num(bt.bidPrice),
         ask = num(bt.askPrice);
@@ -189,7 +213,12 @@ export const VENUES: Record<VenueId, Venue> = {
       ];
       if (m === "perp")
         reqs.push(
-          getJSON(`https://www.okx.com/api/v5/public/funding-rate?instId=${s}`).catch(() => null),
+          (
+            cachedJSON(
+              `https://www.okx.com/api/v5/public/funding-rate?instId=${s}`,
+              300_000,
+            ) as Promise<any>
+          ).catch(() => null),
         );
       const [t, fr] = await Promise.all(reqs);
       const r = t?.data?.[0];
@@ -228,8 +257,11 @@ export const VENUES: Record<VenueId, Venue> = {
         getJSON(
           `https://api.bitget.com/api/v2/mix/market/ticker?symbol=${s}&productType=USDT-FUTURES`,
         ),
-        getJSON(
-          `https://api.bitget.com/api/v2/mix/market/funding-time?symbol=${s}&productType=USDT-FUTURES`,
+        (
+          cachedJSON(
+            `https://api.bitget.com/api/v2/mix/market/funding-time?symbol=${s}&productType=USDT-FUTURES`,
+            300_000,
+          ) as Promise<any>
         ).catch(() => null),
       ]);
       const r = d?.data?.[0];
@@ -268,9 +300,12 @@ export const VENUES: Record<VenueId, Venue> = {
       }
       const [t, fr] = await Promise.all([
         getJSON(`https://api-futures.kucoin.com/api/v1/ticker?symbol=${s}`),
-        getJSON(`https://api-futures.kucoin.com/api/v1/funding-rate/${s}/current`).catch(
-          () => null,
-        ),
+        (
+          cachedJSON(
+            `https://api-futures.kucoin.com/api/v1/funding-rate/${s}/current`,
+            300_000,
+          ) as Promise<any>
+        ).catch(() => null),
       ]);
       const r = t?.data;
       if (!r) return null;
@@ -333,7 +368,12 @@ export const VENUES: Record<VenueId, Venue> = {
       }
       const [d, fr] = await Promise.all([
         getJSON(`https://contract.mexc.com/api/v1/contract/ticker?symbol=${s}`),
-        getJSON(`https://contract.mexc.com/api/v1/contract/funding_rate/${s}`).catch(() => null),
+        (
+          cachedJSON(
+            `https://contract.mexc.com/api/v1/contract/funding_rate/${s}`,
+            300_000,
+          ) as Promise<any>
+        ).catch(() => null),
       ]);
       const raw = Array.isArray(d?.data) ? d.data.find((x: any) => x.symbol === s) : d?.data;
       if (!raw) return null;
@@ -373,7 +413,12 @@ export const VENUES: Record<VenueId, Venue> = {
       }
       const [d, cd] = await Promise.all([
         getJSON(`https://api.gateio.ws/api/v4/futures/usdt/tickers?contract=${s}`),
-        getJSON(`https://api.gateio.ws/api/v4/futures/usdt/contracts/${s}`).catch(() => null),
+        (
+          cachedJSON(
+            `https://api.gateio.ws/api/v4/futures/usdt/contracts/${s}`,
+            300_000,
+          ) as Promise<any>
+        ).catch(() => null),
       ]);
       const r = Array.isArray(d) ? d[0] : null;
       if (!r) return null;

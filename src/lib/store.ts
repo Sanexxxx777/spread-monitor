@@ -1,4 +1,5 @@
 import type { Coin, Settings } from "./types";
+import { clampMarket } from "./venues";
 
 const KEY = "spread-monitor-config-v1";
 
@@ -70,8 +71,14 @@ export function loadConfig(): Config {
       // нормализация старых монет без полей рынка
       const coins = (c.coins ?? []).map((coin) => ({
         ...coin,
-        marketA: coin.marketA ?? (coin.venueA === "dexscreener" ? "spot" : "perp"),
-        marketB: coin.marketB ?? (coin.venueB === "dexscreener" ? "spot" : "perp"),
+        marketA: clampMarket(
+          coin.venueA,
+          coin.marketA ?? (coin.venueA === "dexscreener" ? "spot" : "perp"),
+        ),
+        marketB: clampMarket(
+          coin.venueB,
+          coin.marketB ?? (coin.venueB === "dexscreener" ? "spot" : "perp"),
+        ),
       }));
       return { coins, settings };
     }

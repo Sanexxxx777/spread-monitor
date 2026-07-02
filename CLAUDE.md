@@ -38,11 +38,25 @@ Vite 8 + Tailwind v4 + lightweight-charts. Преемник Qt-версии `~/P
 - **Графики читают цвета через `cssVar()`** из CSS-переменных (canvas НЕ понимает `var()` — нельзя передавать `"var(--color-gold)"` напрямую в lightweight-charts, будет чёрная линия). При смене палитры графики ПЕРЕМОНТИРУЮТСЯ (React `key={paletteKey}`), чтобы перечитать токены.
 - **Конфиг — в localStorage вебвью** (`spread-monitor-config-v1`), не в файле. Сид-монеты в `lib/store.ts`.
 - **dev-only:** `window.__engine` экспонируется в `main.tsx` под `import.meta.env.DEV` (для headless-скриншотов Playwright); в prod вырезается.
+- **Звук (App.tsx): WKWebView замораживает AudioContext, созданный вне user gesture** (state=suspended, беззвучно, без ошибки — был баг «нет бипа», фикс 03.07). Решение: ОДИН модульный `audioCtx` + разблокировка первым `pointerdown` + `resume()` в `beep()`. НЕ создавать новый контекст на каждый бип — вернётся тишина.
+- **Алерты (engine.ts):** `threshold===0` = выключено; гистерезис — `alerted` сбрасывается только при выходе за `threshold∓margin` (`margin=max(0.05,|thr|·0.1)`), иначе дребезг у порога = серия бипов. `onAlert` зовётся ВСЕГДА при hit (toast), звук гейтится по `coin.sound` в App — не возвращать `if(c.sound)` внутрь движка.
+- **fetchOnce — epoch-guard**: `CoinState.epoch` инкрементится в `clear()`; результат in-flight запроса пишется только при совпадении epoch и идентичности `st`. Убрать — смена площадки во время запроса будет перетирать состояние старым ответом (богус-пойнт в истории).
+- **HTTP (venues.ts):** `getJSON` с `AbortSignal.timeout(8000)` — без него зависшая биржа останавливает цикл монеты НАВСЕГДА. Funding/premiumIndex/мета — через `cachedJSON(url, 300_000)` (промис-кэш, reject не кэшируется); запросы ЦЕНЫ через кэш НЕ гонять.
+- **Графики (Charts.tsx) — инкрементальные**: `series.update()` новых точек через `lastRef {len,t}`, полный `setData` только при сбросе/усечении истории. НЕ возвращать безусловный `setData(вся история)` — это O(3000) на каждый тик каждой монеты. Корневой `App` НЕ подписан на `useEngineVersion` (только листья Sidebar/CoinDetail/StatusBar) — не добавлять подписку в App, иначе ререндер всего дерева на каждый фетч любой монеты.
+- **saveConfig дебаунсится 300мс** + флаш по `pagehide` (`configRef`) — иначе правка перед закрытием окна теряется.
 
 ## Don't
 - Не запускать ботов/ордера — это read-only монитор, без ключей.
 - Не коммитить `dist/`, `src-tauri/target/`, `node_modules/`.
 - Скриншот живого нативного окна агентом недоступен (нет прав Screen Recording) → проверять UI headless-Chromium по `npm run dev` (Vite слушает IPv6 `[::1]:1420` → ходить на `localhost`, Chromium запускать с `--no-proxy-server`).
+
+## TODO (по аудиту 03.07, ждут решения Саши)
+- **Базис цены НЕ унифицирован**: Binance/Aster/MEXC-спот/Hyperliquid отдают MID `(bid+ask)/2`, Bybit/OKX/Bitget/KuCoin/Gate/MEXC-перп — last-trade → спред mid⇄last систематически искажён на долю бид-аск спреда (на BTC незаметно, на неликвидах — десятки бп). Фикс = общий helper «mid если есть bid/ask, иначе last» во всех ~10 адаптерах; ИЗМЕНИТ показываемые цифры.
+- **Свёрнутое окно**: WKWebView троттлит setTimeout → опрос и алерты фактически встают. Настоящий фикс = опрос+порог+нативные уведомления в Rust (Tokio), заодно системный звук вместо Web Audio. Крупная переделка, отдельным заходом.
+- **Конфиг в localStorage = evictable** (WebKit storage pressure может вычистить пары). Фикс = tauri-plugin-store (JSON в app config dir), localStorage как миграционный источник.
+- Binance funding: берётся `lastFundingRate` (реализованная), остальные биржи — предстоящая; мелкая несогласованность цифры fund%.
+- Glass/backdrop-filter на KPI-карточках + анимация чисел (rAF 420мс) = самый тяжёлый пейнт-паттерн WebKit; если понадобится ещё скорость — убрать blur с часто обновляемых карточек.
+- Per-coin подписка вместо глобального `version` (фоновые монеты не будут ререндерить видимый график) — следующий шаг перфа после 03.07.
 
 ## TODO (low)
 - Hyperliquid спот не добавлен (другая схема символов HYPE/USDC) — при желании прикрутить как у Aster.

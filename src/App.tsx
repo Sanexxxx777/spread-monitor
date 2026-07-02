@@ -9,23 +9,43 @@ import { CoinDetail } from "@/components/CoinDetail";
 import { AddCoinDialog } from "@/components/AddCoinDialog";
 import { AuthorBadge } from "@/components/AuthorBadge";
 
-function beep() {
-  try {
+let audioCtx: AudioContext | null = null;
+
+function getAudioCtx(): AudioContext {
+  if (!audioCtx) {
     const Ctx =
       window.AudioContext ||
       (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    const ctx = new Ctx();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.connect(g);
-    g.connect(ctx.destination);
-    o.type = "sine";
-    o.frequency.value = 880;
-    g.gain.setValueAtTime(0.0001, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
-    o.start();
-    o.stop(ctx.currentTime + 0.36);
+    audioCtx = new Ctx();
+  }
+  return audioCtx;
+}
+
+function playBeep(ctx: AudioContext) {
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g);
+  g.connect(ctx.destination);
+  o.type = "sine";
+  o.frequency.value = 880;
+  g.gain.setValueAtTime(0.0001, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.15, ctx.currentTime + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+  o.start();
+  o.stop(ctx.currentTime + 0.36);
+}
+
+function beep() {
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === "suspended") {
+      ctx
+        .resume()
+        .then(() => playBeep(ctx))
+        .catch(() => {});
+    } else {
+      playBeep(ctx);
+    }
   } catch {
     /* ignore */
   }
@@ -51,11 +71,14 @@ export default function App() {
   });
   const [toast, setToast] = useState("");
   const toastTimer = useRef<number | null>(null);
-  useEngineVersion();
+  const saveTimer = useRef<number | null>(null);
+  const configRef = useRef(config);
 
   useEffect(() => {
+    configRef.current = config;
     engine.setCoins(config.coins, config.settings.maxHistory);
-    saveConfig(config);
+    if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => saveConfig(config), 300);
   }, [config]);
 
   useEffect(() => {
@@ -69,8 +92,25 @@ export default function App() {
   }
 
   useEffect(() => {
-    engine.onAlert = (_coin, msg) => {
-      beep();
+    // страховка дебаунса: не потерять несохранённый конфиг при закрытии окна
+    window.addEventListener("pagehide", () => {
+      if (saveTimer.current) {
+        window.clearTimeout(saveTimer.current);
+        saveTimer.current = null;
+        saveConfig(configRef.current);
+      }
+    });
+    window.addEventListener(
+      "pointerdown",
+      () => {
+        void getAudioCtx()
+          .resume()
+          .catch(() => {});
+      },
+      { once: true },
+    );
+    engine.onAlert = (coin, msg) => {
+      if (coin.sound) beep();
       setToast(msg);
       if (toastTimer.current) clearTimeout(toastTimer.current);
       toastTimer.current = window.setTimeout(() => setToast(""), 6000);
@@ -120,7 +160,10 @@ export default function App() {
     <div className="h-screen w-screen flex flex-col text-ink">
       <div
         onMouseDown={(e) => {
-          if (e.button === 0) void getCurrentWindow().startDragging().catch(() => {});
+          if (e.button === 0)
+            void getCurrentWindow()
+              .startDragging()
+              .catch(() => {});
         }}
         className="h-9 shrink-0 flex items-center gap-2 px-4 cursor-default"
       >

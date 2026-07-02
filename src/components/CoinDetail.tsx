@@ -230,7 +230,10 @@ export function CoinDetail({
       </div>
 
       {/* Графики */}
-      <div className="anim-in flex flex-col gap-4 flex-1 min-h-0" style={{ animationDelay: "120ms" }}>
+      <div
+        className="anim-in flex flex-col gap-4 flex-1 min-h-0"
+        style={{ animationDelay: "120ms" }}
+      >
         {/* График цен */}
         <section className="glass rounded-2xl border border-white/10 p-4 flex flex-col gap-2 flex-[3] min-h-[200px]">
           <header className="flex items-end gap-3 px-1 flex-wrap">

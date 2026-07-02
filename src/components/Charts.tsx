@@ -60,6 +60,7 @@ export function PriceChart({
   const ref = useRef<HTMLDivElement>(null);
   const sa = useRef<ISeriesApi<"Line"> | null>(null);
   const sb = useRef<ISeriesApi<"Line"> | null>(null);
+  const lastRef = useRef<{ len: number; t: number | null }>({ len: 0, t: null });
 
   useEffect(() => {
     if (!ref.current) return;
@@ -88,8 +89,21 @@ export function PriceChart({
   }, [colorA, colorB]);
 
   useEffect(() => {
-    sa.current?.setData(history.map((p) => ({ time: p.t as UTCTimestamp, value: p.a })));
-    sb.current?.setData(history.map((p) => ({ time: p.t as UTCTimestamp, value: p.b })));
+    if (!sa.current || !sb.current) return;
+    const prev = lastRef.current;
+    const continued =
+      prev.len > 0 && history.length >= prev.len && history[prev.len - 1]?.t === prev.t;
+    if (continued) {
+      for (let i = prev.len; i < history.length; i++) {
+        const p = history[i];
+        sa.current.update({ time: p.t as UTCTimestamp, value: p.a });
+        sb.current.update({ time: p.t as UTCTimestamp, value: p.b });
+      }
+    } else {
+      sa.current.setData(history.map((p) => ({ time: p.t as UTCTimestamp, value: p.a })));
+      sb.current.setData(history.map((p) => ({ time: p.t as UTCTimestamp, value: p.b })));
+    }
+    lastRef.current = { len: history.length, t: history[history.length - 1]?.t ?? null };
   }, [version, history]);
 
   return <div ref={ref} className="h-full w-full" />;
@@ -107,6 +121,7 @@ export function SpreadChart({
   const ref = useRef<HTMLDivElement>(null);
   const s = useRef<ISeriesApi<"Line"> | null>(null);
   const thr = useRef<IPriceLine | null>(null);
+  const lastRef = useRef<{ len: number; t: number | null }>({ len: 0, t: null });
 
   useEffect(() => {
     if (!ref.current) return;
@@ -144,7 +159,19 @@ export function SpreadChart({
   }, [threshold]);
 
   useEffect(() => {
-    s.current?.setData(history.map((p) => ({ time: p.t as UTCTimestamp, value: p.spread })));
+    if (!s.current) return;
+    const prev = lastRef.current;
+    const continued =
+      prev.len > 0 && history.length >= prev.len && history[prev.len - 1]?.t === prev.t;
+    if (continued) {
+      for (let i = prev.len; i < history.length; i++) {
+        const p = history[i];
+        s.current.update({ time: p.t as UTCTimestamp, value: p.spread });
+      }
+    } else {
+      s.current.setData(history.map((p) => ({ time: p.t as UTCTimestamp, value: p.spread })));
+    }
+    lastRef.current = { len: history.length, t: history[history.length - 1]?.t ?? null };
   }, [version, history]);
 
   return <div ref={ref} className="h-full w-full" />;

@@ -13,6 +13,7 @@ export interface CoinState {
   running: boolean;
   alerted: boolean;
   error?: string;
+  epoch: number;
 }
 
 type Listener = () => void;
@@ -51,7 +52,7 @@ class Engine {
     this.coins = coins;
     for (const c of coins) {
       if (!this.states.has(c.id)) {
-        this.states.set(c.id, { history: [], running: false, alerted: false });
+        this.states.set(c.id, { history: [], running: false, alerted: false, epoch: 0 });
       }
     }
     this.emit();
@@ -100,6 +101,7 @@ class Engine {
   clear(id: string) {
     const st = this.states.get(id);
     if (st) {
+      st.epoch++;
       st.history = [];
       st.lastUpdate = undefined;
       st.spread = undefined;
@@ -113,9 +115,21 @@ class Engine {
   private async fetchOnce(c: Coin) {
     const st = this.states.get(c.id);
     if (!st) return;
+    const epoch = st.epoch;
     try {
-      const q = (id: VenueId, market: Market, hint?: number): Promise<Quote | null> =>
-        VENUES[id].quote(c, symbolForVenue(c, id, market), market, hint).catch(() => null);
+      let errA: string | undefined;
+      let errB: string | undefined;
+      const q =
+        (side: "A" | "B") =>
+        (id: VenueId, market: Market, hint?: number): Promise<Quote | null> =>
+          VENUES[id].quote(c, symbolForVenue(c, id, market), market, hint).catch((e) => {
+            const msg = String((e as Error)?.message ?? e);
+            if (side === "A") errA = msg;
+            else errB = msg;
+            return null;
+          });
+      const qA = q("A");
+      const qB = q("B");
       const aDexNoC = VENUES[c.venueA].kind === "dex" && !c.contract;
       const bDexNoC = VENUES[c.venueB].kind === "dex" && !c.contract;
 
@@ -123,14 +137,16 @@ class Engine {
       let qb: Quote | null;
       if (bDexNoC && !aDexNoC) {
         // B — DEX без контракта: сначала A как ценовой ориентир
-        qa = await q(c.venueA, c.marketA);
-        qb = await q(c.venueB, c.marketB, qa?.last);
+        qa = await qA(c.venueA, c.marketA);
+        qb = await qB(c.venueB, c.marketB, qa?.last);
       } else if (aDexNoC && !bDexNoC) {
-        qb = await q(c.venueB, c.marketB);
-        qa = await q(c.venueA, c.marketA, qb?.last);
+        qb = await qB(c.venueB, c.marketB);
+        qa = await qA(c.venueA, c.marketA, qb?.last);
       } else {
-        [qa, qb] = await Promise.all([q(c.venueA, c.marketA), q(c.venueB, c.marketB)]);
+        [qa, qb] = await Promise.all([qA(c.venueA, c.marketA), qB(c.venueB, c.marketB)]);
       }
+
+      if (this.states.get(c.id) !== st || st.epoch !== epoch) return;
 
       // Цены ставим НЕЗАВИСИМО: даже если одна сторона без данных, вторая видна.
       st.qa = qa ?? undefined;
@@ -151,23 +167,30 @@ class Engine {
           st.history.splice(0, st.history.length - this.maxHistory);
         }
         st.error = undefined;
-        const hit = c.threshold >= 0 ? spread >= c.threshold : spread <= c.threshold;
+        const hit =
+          c.threshold !== 0 && (c.threshold >= 0 ? spread >= c.threshold : spread <= c.threshold);
         if (hit && !st.alerted) {
           st.alerted = true;
-          if (c.sound) {
-            this.onAlert?.(
-              c,
-              `${c.label}: спред ${spread.toFixed(2)}% пересёк порог ${c.threshold}%`,
-            );
-          }
-        } else if (!hit) {
-          st.alerted = false;
+          this.onAlert?.(
+            c,
+            `${c.label}: спред ${spread.toFixed(2)}% пересёк порог ${c.threshold}%`,
+          );
+        } else if (!hit && st.alerted) {
+          const margin = Math.max(0.05, Math.abs(c.threshold) * 0.1);
+          const released =
+            c.threshold >= 0 ? spread < c.threshold - margin : spread > c.threshold + margin;
+          if (released) st.alerted = false;
         }
       } else {
         st.spread = undefined;
-        st.error = !qa ? `нет данных: ${c.venueA}` : !qb ? `нет данных: ${c.venueB}` : undefined;
+        st.error = !qa
+          ? `нет данных: ${c.venueA}${errA ? ` (${errA})` : ""}`
+          : !qb
+            ? `нет данных: ${c.venueB}${errB ? ` (${errB})` : ""}`
+            : undefined;
       }
     } catch (e) {
+      if (this.states.get(c.id) !== st || st.epoch !== epoch) return;
       st.error = String(e);
     }
     this.emit();
