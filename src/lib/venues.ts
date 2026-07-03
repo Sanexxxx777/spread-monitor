@@ -6,6 +6,11 @@ function num(v: unknown): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+// Базис цены: mid из стакана, если тикер отдаёт bid/ask, иначе цена последней сделки.
+function midOrLast(bid?: number, ask?: number, last?: number): number | undefined {
+  return bid !== undefined && ask !== undefined ? (bid + ask) / 2 : last;
+}
+
 async function getJSON(url: string, init?: RequestInit): Promise<any> {
   const r = await fetch(url, { method: "GET", signal: AbortSignal.timeout(8000), ...init });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -107,8 +112,9 @@ export const VENUES: Record<VenueId, Venue> = {
         const d = await getJSON(`https://api.binance.com/api/v3/ticker/bookTicker?symbol=${s}`);
         const bid = num(d.bidPrice),
           ask = num(d.askPrice);
-        if (bid === undefined || ask === undefined) return null;
-        return { last: (bid + ask) / 2, bid, ask };
+        const last = midOrLast(bid, ask);
+        if (last === undefined) return null;
+        return { last, bid, ask };
       }
       const [bt, pi] = await Promise.all([
         getJSON(`https://fapi.binance.com/fapi/v1/ticker/bookTicker?symbol=${s}`),
@@ -121,9 +127,10 @@ export const VENUES: Record<VenueId, Venue> = {
       ]);
       const bid = num(bt.bidPrice),
         ask = num(bt.askPrice);
-      if (bid === undefined || ask === undefined) return null;
+      const last = midOrLast(bid, ask);
+      if (last === undefined) return null;
       return {
-        last: (bid + ask) / 2,
+        last,
         bid,
         ask,
         funding: pi ? num(pi.lastFundingRate) : undefined,
@@ -145,8 +152,9 @@ export const VENUES: Record<VenueId, Venue> = {
         const d = await getJSON(`https://sapi.asterdex.com/api/v1/ticker/bookTicker?symbol=${s}`);
         const bid = num(d.bidPrice),
           ask = num(d.askPrice);
-        if (bid === undefined || ask === undefined) return null;
-        return { last: (bid + ask) / 2, bid, ask };
+        const last = midOrLast(bid, ask);
+        if (last === undefined) return null;
+        return { last, bid, ask };
       }
       const [bt, pi] = await Promise.all([
         getJSON(`https://fapi.asterdex.com/fapi/v1/ticker/bookTicker?symbol=${s}`),
@@ -159,10 +167,11 @@ export const VENUES: Record<VenueId, Venue> = {
       ]);
       const bid = num(bt.bidPrice),
         ask = num(bt.askPrice);
-      if (bid === undefined || ask === undefined) return null;
+      const last = midOrLast(bid, ask);
+      if (last === undefined) return null;
       const p = Array.isArray(pi) ? pi[0] : pi;
       return {
-        last: (bid + ask) / 2,
+        last,
         bid,
         ask,
         funding: p ? num(p.lastFundingRate) : undefined,
@@ -186,12 +195,14 @@ export const VENUES: Record<VenueId, Venue> = {
       );
       const r = d?.result?.list?.[0];
       if (!r) return null;
-      const last = num(r.lastPrice);
+      const bid = num(r.bid1Price),
+        ask = num(r.ask1Price);
+      const last = midOrLast(bid, ask, num(r.lastPrice));
       if (last === undefined) return null;
       return {
         last,
-        bid: num(r.bid1Price),
-        ask: num(r.ask1Price),
+        bid,
+        ask,
         funding: m === "perp" ? num(r.fundingRate) : undefined,
         fundingTime: m === "perp" ? num(r.nextFundingTime) : undefined,
         mark: num(r.markPrice),
@@ -223,13 +234,15 @@ export const VENUES: Record<VenueId, Venue> = {
       const [t, fr] = await Promise.all(reqs);
       const r = t?.data?.[0];
       if (!r) return null;
-      const last = num(r.last);
+      const bid = num(r.bidPx),
+        ask = num(r.askPx);
+      const last = midOrLast(bid, ask, num(r.last));
       if (last === undefined) return null;
       const open = num(r.open24h);
       return {
         last,
-        bid: num(r.bidPx),
-        ask: num(r.askPx),
+        bid,
+        ask,
         change24: open ? (last - open) / open : undefined,
         funding: fr ? num(fr.data?.[0]?.fundingRate) : undefined,
         fundingTime: fr ? num(fr.data?.[0]?.fundingTime) : undefined,
@@ -249,9 +262,11 @@ export const VENUES: Record<VenueId, Venue> = {
         const d = await getJSON(`https://api.bitget.com/api/v2/spot/market/tickers?symbol=${s}`);
         const r = d?.data?.[0];
         if (!r) return null;
-        const last = num(r.lastPr);
+        const bid = num(r.bidPr),
+          ask = num(r.askPr);
+        const last = midOrLast(bid, ask, num(r.lastPr));
         if (last === undefined) return null;
-        return { last, bid: num(r.bidPr), ask: num(r.askPr), change24: num(r.change24h) };
+        return { last, bid, ask, change24: num(r.change24h) };
       }
       const [d, ft] = await Promise.all([
         getJSON(
@@ -266,12 +281,14 @@ export const VENUES: Record<VenueId, Venue> = {
       ]);
       const r = d?.data?.[0];
       if (!r) return null;
-      const last = num(r.lastPr);
+      const bid = num(r.bidPr),
+        ask = num(r.askPr);
+      const last = midOrLast(bid, ask, num(r.lastPr));
       if (last === undefined) return null;
       return {
         last,
-        bid: num(r.bidPr),
-        ask: num(r.askPr),
+        bid,
+        ask,
         funding: num(r.fundingRate),
         change24: num(r.change24h),
         fundingTime: ft ? num(ft.data?.[0]?.nextFundingTime) : undefined,
@@ -294,9 +311,11 @@ export const VENUES: Record<VenueId, Venue> = {
         );
         const r = d?.data;
         if (!r) return null;
-        const last = num(r.price);
+        const bid = num(r.bestBid),
+          ask = num(r.bestAsk);
+        const last = midOrLast(bid, ask, num(r.price));
         if (last === undefined) return null;
-        return { last, bid: num(r.bestBid), ask: num(r.bestAsk) };
+        return { last, bid, ask };
       }
       const [t, fr] = await Promise.all([
         getJSON(`https://api-futures.kucoin.com/api/v1/ticker?symbol=${s}`),
@@ -309,14 +328,16 @@ export const VENUES: Record<VenueId, Venue> = {
       ]);
       const r = t?.data;
       if (!r) return null;
-      const last = num(r.price);
+      const bid = num(r.bestBidPrice),
+        ask = num(r.bestAskPrice);
+      const last = midOrLast(bid, ask, num(r.price));
       if (last === undefined) return null;
       const tp = fr ? num(fr.data?.timePoint) : undefined;
       const gr = fr ? num(fr.data?.granularity) : undefined;
       return {
         last,
-        bid: num(r.bestBidPrice),
-        ask: num(r.bestAskPrice),
+        bid,
+        ask,
         funding: fr ? num(fr.data?.value) : undefined,
         fundingTime: tp !== undefined && gr !== undefined ? tp + gr : undefined,
       };
@@ -357,10 +378,11 @@ export const VENUES: Record<VenueId, Venue> = {
         ]);
         const bid = num(bt.bidPrice),
           ask = num(bt.askPrice);
-        if (bid === undefined || ask === undefined) return null;
+        const last = midOrLast(bid, ask);
+        if (last === undefined) return null;
         const chg = t24 ? num(t24.priceChangePercent) : undefined;
         return {
-          last: (bid + ask) / 2,
+          last,
           bid,
           ask,
           change24: chg !== undefined ? chg / 100 : undefined,
@@ -377,12 +399,14 @@ export const VENUES: Record<VenueId, Venue> = {
       ]);
       const raw = Array.isArray(d?.data) ? d.data.find((x: any) => x.symbol === s) : d?.data;
       if (!raw) return null;
-      const last = num(raw.lastPrice);
+      const bid = num(raw.bid1),
+        ask = num(raw.ask1);
+      const last = midOrLast(bid, ask, num(raw.lastPrice));
       if (last === undefined) return null;
       return {
         last,
-        bid: num(raw.bid1),
-        ask: num(raw.ask1),
+        bid,
+        ask,
         change24: num(raw.riseFallRate),
         funding: fr ? num(fr.data?.fundingRate) : undefined,
         fundingTime: fr ? num(fr.data?.nextSettleTime) : undefined,
@@ -402,12 +426,14 @@ export const VENUES: Record<VenueId, Venue> = {
         const d = await getJSON(`https://api.gateio.ws/api/v4/spot/tickers?currency_pair=${s}`);
         const r = Array.isArray(d) ? d[0] : null;
         if (!r) return null;
-        const last = num(r.last);
+        const bid = num(r.highest_bid),
+          ask = num(r.lowest_ask);
+        const last = midOrLast(bid, ask, num(r.last));
         if (last === undefined) return null;
         return {
           last,
-          bid: num(r.highest_bid),
-          ask: num(r.lowest_ask),
+          bid,
+          ask,
           change24: (num(r.change_percentage) ?? 0) / 100,
         };
       }
@@ -422,14 +448,16 @@ export const VENUES: Record<VenueId, Venue> = {
       ]);
       const r = Array.isArray(d) ? d[0] : null;
       if (!r) return null;
-      const last = num(r.last);
+      const bid = num(r.highest_bid),
+        ask = num(r.lowest_ask);
+      const last = midOrLast(bid, ask, num(r.last));
       if (last === undefined) return null;
       const cc = Array.isArray(cd) ? cd[0] : cd;
       const fna = cc ? num(cc.funding_next_apply) : undefined; // секунды
       return {
         last,
-        bid: num(r.highest_bid),
-        ask: num(r.lowest_ask),
+        bid,
+        ask,
         funding: num(r.funding_rate),
         mark: num(r.mark_price),
         change24: (num(r.change_percentage) ?? 0) / 100,

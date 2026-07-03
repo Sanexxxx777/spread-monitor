@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/plugin-notification";
 import { engine, useEngineVersion } from "@/lib/engine";
 import { loadConfig, saveConfig, type Config } from "@/lib/store";
 import { applyPalette, PALETTE_ORDER, PALETTES } from "@/lib/themes";
@@ -49,6 +54,10 @@ function beep() {
   } catch {
     /* ignore */
   }
+}
+
+function isTauri(): boolean {
+  return "__TAURI_INTERNALS__" in window;
 }
 
 function StatusBar({ coins, toast }: { coins: Coin[]; toast: string }) {
@@ -114,7 +123,22 @@ export default function App() {
       setToast(msg);
       if (toastTimer.current) clearTimeout(toastTimer.current);
       toastTimer.current = window.setTimeout(() => setToast(""), 6000);
+      try {
+        if (isTauri()) sendNotification({ title: coin.label, body: msg });
+      } catch {
+        /* ignore */
+      }
     };
+    if (isTauri()) {
+      void (async () => {
+        try {
+          const granted = await isPermissionGranted();
+          if (!granted) await requestPermission();
+        } catch {
+          /* ignore */
+        }
+      })();
+    }
     if (config.settings.autoStart) engine.startAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

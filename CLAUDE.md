@@ -44,16 +44,17 @@ Vite 8 + Tailwind v4 + lightweight-charts. Преемник Qt-версии `~/P
 - **HTTP (venues.ts):** `getJSON` с `AbortSignal.timeout(8000)` — без него зависшая биржа останавливает цикл монеты НАВСЕГДА. Funding/premiumIndex/мета — через `cachedJSON(url, 300_000)` (промис-кэш, reject не кэшируется); запросы ЦЕНЫ через кэш НЕ гонять.
 - **Графики (Charts.tsx) — инкрементальные**: `series.update()` новых точек через `lastRef {len,t}`, полный `setData` только при сбросе/усечении истории. НЕ возвращать безусловный `setData(вся история)` — это O(3000) на каждый тик каждой монеты. Корневой `App` НЕ подписан на `useEngineVersion` (только листья Sidebar/CoinDetail/StatusBar) — не добавлять подписку в App, иначе ререндер всего дерева на каждый фетч любой монеты.
 - **saveConfig дебаунсится 300мс** + флаш по `pagehide` (`configRef`) — иначе правка перед закрытием окна теряется.
+- **Базис цены унифицирован (v2.1.0)**: helper `midOrLast(bid, ask, last)` во ВСЕХ CEX-адаптерах — `last` в Quote = mid при наличии bid/ask, иначе last-trade. НЕ возвращать голый lastPrice у отдельных бирж — спред mid⇄last систематически искажён на долю бид-аск (ложные алерты на неликвидах). Dexscreener (нет стакана) и HL allMids — как есть.
+- **Фон (v2.1.0):** `backgroundThrottling: "disabled"` в tauri.conf.json (WebKit-only, macOS 14+) — опрос живёт при свёрнутом окне; + нативные уведомления `tauri-plugin-notification` в `engine.onAlert` (гейт `isTauri()` + try/catch — headless-смоук без Tauri не должен падать). Разрешение запрашивается на старте.
+- **Конфиг (v2.1.0):** localStorage = ПЕРВИЧНЫЙ (синхронный), `tauri-plugin-store` `config.json` = зеркальный бэкап на случай эвикции WebKit. `main.tsx` бутстрап: localStorage пуст + Tauri → restoreFromBackup() до рендера. Нормализация одна — `normalizeConfig()` (clampMarket+миграция палитры), НЕ дублировать её в новых путях загрузки.
+- **Перф-базлайн v2.1.0 (2 пары, интервал деф.):** app-процесс 0-0.4% CPU / ~40-60МБ + WebContent ~1-1.5% CPU / ~30-60МБ. Если после правок сильно выше — ищи регрессию (обычно возврат setData-на-тик или подписка в корне App).
 
 ## Don't
 - Не запускать ботов/ордера — это read-only монитор, без ключей.
 - Не коммитить `dist/`, `src-tauri/target/`, `node_modules/`.
 - Скриншот живого нативного окна агентом недоступен (нет прав Screen Recording) → проверять UI headless-Chromium по `npm run dev` (Vite слушает IPv6 `[::1]:1420` → ходить на `localhost`, Chromium запускать с `--no-proxy-server`).
 
-## TODO (по аудиту 03.07, ждут решения Саши)
-- **Базис цены НЕ унифицирован**: Binance/Aster/MEXC-спот/Hyperliquid отдают MID `(bid+ask)/2`, Bybit/OKX/Bitget/KuCoin/Gate/MEXC-перп — last-trade → спред mid⇄last систематически искажён на долю бид-аск спреда (на BTC незаметно, на неликвидах — десятки бп). Фикс = общий helper «mid если есть bid/ask, иначе last» во всех ~10 адаптерах; ИЗМЕНИТ показываемые цифры.
-- **Свёрнутое окно**: WKWebView троттлит setTimeout → опрос и алерты фактически встают. Настоящий фикс = опрос+порог+нативные уведомления в Rust (Tokio), заодно системный звук вместо Web Audio. Крупная переделка, отдельным заходом.
-- **Конфиг в localStorage = evictable** (WebKit storage pressure может вычистить пары). Фикс = tauri-plugin-store (JSON в app config dir), localStorage как миграционный источник.
+## TODO (остатки аудита 03.07; базис/фон/бэкап конфига — СДЕЛАНЫ в v2.1.0, см. гетчи)
 - Binance funding: берётся `lastFundingRate` (реализованная), остальные биржи — предстоящая; мелкая несогласованность цифры fund%.
 - Glass/backdrop-filter на KPI-карточках + анимация чисел (rAF 420мс) = самый тяжёлый пейнт-паттерн WebKit; если понадобится ещё скорость — убрать blur с часто обновляемых карточек.
 - Per-coin подписка вместо глобального `version` (фоновые монеты не будут ререндерить видимый график) — следующий шаг перфа после 03.07.
