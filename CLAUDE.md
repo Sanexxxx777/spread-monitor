@@ -13,6 +13,7 @@ Vite 8 + Tailwind v4 + lightweight-charts. Преемник Qt-версии `~/P
 
 ## Run / Build
 - Dev: `npm run tauri dev`. Сборка: `npm run tauri build` → `src-tauri/target/release/bundle/macos/Spread Monitor.app` (~6 МБ).
+- **После установки .app → `rm -rf src-tauri/target`** (артефакты Rust разрастаются до 2,5+ ГБ — release+debug+deps; пересоздаются при следующей сборке за ~5 мин). Также чистится еженедельным `~/Projects/.cleanup.sh` (паттерн `src-tauri/target` добавлен 04.07).
 - Только фронтенд (быстрая проверка типов): `npm run build` (= `tsc -b && vite build`). Формат: `npx prettier --write src` (`.prettierrc`).
 
 ## Гетчи (НЕ переоткрывать заново)
