@@ -53,8 +53,9 @@ npm run tauri build
 
 ## Автор
 
-**Aleksandr NFA** — [@Aleksandr_NFA](https://t.me/Aleksandr_NFA)
+**Aleksandr Shulgin** ([@Aleksandr_NFA](https://t.me/Aleksandr_NFA))
 - GitHub: [github.com/Sanexxxx777](https://github.com/Sanexxxx777)
+- Портфолио: [shulgin.is-a.dev](https://shulgin.is-a.dev)
 - Telegram-канал: [@driptrade3](https://t.me/driptrade3)
 
 ## Лицензия

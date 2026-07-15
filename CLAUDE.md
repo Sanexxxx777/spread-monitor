@@ -2,7 +2,7 @@
 
 Нативное macOS-приложение: спред между ЛЮБЫМИ двумя из 10 площадок (DEX + спот/перп
 9 бирж), выбор пары A⇄B и рынка (спот/фьючерс) по каждой колонке. Tauri v2 + React 19 +
-Vite 8 + Tailwind v4 + lightweight-charts. Преемник Qt-версии `~/Projects/dex-spread-monitor` (фолбэк).
+Vite 8 + Tailwind v4 + lightweight-charts. Преемник более ранней Qt-версии того же монитора.
 
 **Публичный** репо: github.com/Sanexxxx777/spread-monitor (origin=ssh, branch `main`).
 Приложение: `/Applications/Spread Monitor.app`. Лицензия: некоммерческая + обязательная
@@ -13,7 +13,7 @@ Vite 8 + Tailwind v4 + lightweight-charts. Преемник Qt-версии `~/P
 
 ## Run / Build
 - Dev: `npm run tauri dev`. Сборка: `npm run tauri build` → `src-tauri/target/release/bundle/macos/Spread Monitor.app` (~6 МБ).
-- **После установки .app → `rm -rf src-tauri/target`** (артефакты Rust разрастаются до 2,5+ ГБ — release+debug+deps; пересоздаются при следующей сборке за ~5 мин). Также чистится еженедельным `~/Projects/.cleanup.sh` (паттерн `src-tauri/target` добавлен 04.07).
+- **После установки .app → `rm -rf src-tauri/target`** (артефакты Rust разрастаются до 2,5+ ГБ — release+debug+deps; пересоздаются при следующей сборке за ~5 мин).
 - Только фронтенд (быстрая проверка типов): `npm run build` (= `tsc -b && vite build`). Формат: `npx prettier --write src` (`.prettierrc`).
 
 ## Гетчи (НЕ переоткрывать заново)
