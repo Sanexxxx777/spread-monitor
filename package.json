@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.0.0",
   "description": "Нативный монитор спреда между любыми двумя площадками (DEX + 9 CEX-фьючерсов)",
-  "author": "Aleksandr NFA (@Aleksandr_NFA)",
+  "author": "Aleksandr Shulgin (@Aleksandr_NFA)",
   "homepage": "https://t.me/driptrade3",
   "repository": "https://github.com/Sanexxxx777",
   "license": "SEE LICENSE IN LICENSE",

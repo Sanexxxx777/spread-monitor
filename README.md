@@ -65,4 +65,4 @@ npm run tauri build
 - ⛔ **Коммерческое** использование — только с письменного разрешения автора.
 - ⛔ Распространение **без указания авторства** запрещено.
 
-© 2026 Aleksandr NFA ([@Aleksandr_NFA](https://t.me/driptrade3)).
+© 2026 Aleksandr Shulgin ([@Aleksandr_NFA](https://t.me/driptrade3)).
