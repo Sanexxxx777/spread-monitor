@@ -1,5 +1,20 @@
 # Spread Monitor
 
+<!-- TODO: demo GIF (20-40s) -->
+
+<details>
+<summary>🇬🇧 English summary</summary>
+
+Native macOS app (Tauri) for monitoring the spread between **any two venues** out of 10: DEX (Dexscreener) + futures on Binance, Bybit, OKX, Bitget, KuCoin, Hyperliquid, Aster, MEXC, Gate. Pick venue **A** and venue **B** from dropdowns and see the full spread dynamics: prices, spread by last price or orderbook, funding, 24h change, real-time charts. Liquid-glass UI — native macOS vibrancy, warm-gold gamma design system. Successor to the Qt version.
+
+Run: `npm install && npm run tauri dev`. Build: `npm run tauri build`. Stack: Tauri v2 (Rust) + React 19 + Vite + TypeScript + Tailwind v4 + Radix UI + lightweight-charts.
+
+⚠️ **Not financial advice (NFA).** This tool only displays market data — it does not execute trades, provide signals, or guarantee data accuracy/latency. Use at your own risk.
+
+Full README below is in Russian.
+
+</details>
+
 Нативное macOS-приложение (Tauri) для мониторинга спреда между **любыми двумя
 площадками** из 10: DEX (Dexscreener) + фьючерсы Binance, Bybit, OKX, Bitget,
 KuCoin, Hyperliquid, Aster, MEXC, Gate.
@@ -50,6 +65,12 @@ npm run tauri build
 | Dexscreener (DEX) | контракт + сеть | priceUsd |
 
 Графики lightweight-charts © TradingView (Apache-2.0).
+
+## ⚠️ Дисклеймер / Disclaimer
+
+Не является финансовой консультацией (NFA). Приложение только отображает рыночные данные из публичных API бирж/DEX — не исполняет сделки, не даёт торговых сигналов и не гарантирует точность или задержку данных. Используйте на свой риск.
+
+Not financial advice (NFA). Spread Monitor only displays market data pulled from public exchange/DEX APIs — it does not execute trades, provide signals, or guarantee data accuracy or latency. Use at your own risk.
 
 ## Автор
 
